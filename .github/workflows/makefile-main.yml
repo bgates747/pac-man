@@ -24,14 +24,13 @@ jobs:
         mv CEdev agdev
         wget https://github.com/pcawte/AgDev/releases/download/v3.0.0/AgDev_release_v3.0.0_linux.zip
         unzip -d agdev -o AgDev_release_v3.0.0_linux.zip
+        echo "AGDEV_BASE=$(pwd)/agdev" >> $GITHUB_ENV
         rm AgDev_release_v3.0.0_linux.zip
         echo "     ##### Updating GITHUB_PATH"
         echo "$(pwd)/agdev/bin" >> $GITHUB_PATH
-        echo "     ##### New GITHUB_PATH"
-        echo $GITHUB_PATH
-        ls -la $(pwd)/agdev/bin/
-        echo "AGDEV_BASE=$(pwd)/agdev" >> $GITHUB_ENV
-
+        echo "     ##### Checking ez80-clang"
+        $(pwd)/agdev/bin/ez80-clang -v
+        ez80-clang -v
 
         echo "##### Installing agon-ez80asm"
         mkdir -p agon-ez80asm
