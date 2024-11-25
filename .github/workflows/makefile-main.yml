@@ -34,9 +34,7 @@ jobs:
         cd agon-ez80asm
         wget https://github.com/envenomator/agon-ez80asm/releases/download/v1.8/ez80asm_linux_elf_x86_64.gz
         tar zxpvf ez80asm_linux_elf_x86_64.gz
-        mv ez80asm_linux_elf_x86_64 ez80asm_linux_elf_x86_64.tar
-        tar xpvf ez80asm_linux_elf_x86_64.tar
-        rm ez80asm_linux_elf_x86_64.tar 
+        rm ez80asm_linux_elf_x86_64.gz
         echo "$(pwd)/bin" >> $GITHUB_PATH
 
     - name: Check Binaries
