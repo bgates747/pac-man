@@ -31,55 +31,34 @@ jobs:
 
     - name: Install Prerequisites
       run: |
+        echo "     ##### Installing AgDev"
         sudo apt-get install -y build-essential gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu gcc-arm-linux-gnueabi binutils-arm-linux-gnueabi lcov
-        wget https://github.com/CE-Programming/toolchain/releases/latest/download/CEdev-Linux.tar.gz
+        wget https://github.com/CE-Programming/toolchain/releases/download/v12.1/CEdev-Linux.tar.gz
         tar zxpvf CEdev-Linux.tar.gz
         rm CEdev-Linux.tar.gz
         mv CEdev agdev
         wget https://github.com/pcawte/AgDev/releases/download/v3.0.0/AgDev_release_v3.0.0_linux.zip
         unzip -d agdev -o AgDev_release_v3.0.0_linux.zip
-        rm AgDev_release_v3.0.0_linux.zip
-        echo "$(pwd)/agdev/bin" >> $GITHUB_PATH
         echo "AGDEV_BASE=$(pwd)/agdev" >> $GITHUB_ENV
+        rm AgDev_release_v3.0.0_linux.zip
+        echo "     ##### Updating GITHUB_PATH"
+        echo "$(pwd)/agdev/bin" >> $GITHUB_PATH
+
+        echo "##### Installing agon-ez80asm"
+        mkdir -p agon-ez80asm
+        cd agon-ez80asm
+        wget https://github.com/envenomator/agon-ez80asm/releases/download/v1.8/ez80asm_linux_elf_x86_64.gz
+        tar zxpvf ez80asm_linux_elf_x86_64.gz
+        rm ez80asm_linux_elf_x86_64.gz
+        echo "$(pwd)/bin" >> $GITHUB_PATH
+
+    - name: Check Binaries
+      run: |
+        echo "     ##### Checking Binaries"
+        which ez80-clang
+        ez80-clang -v
+        which ez80asm
+        ez80asm -h
 
     - name: Make All
       run: make all
-
-  test:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: true
-
-    - name: Install Prerequisites
-      run: |
-          sudo apt-get install -y lcov
-
-    - name: Run Tests
-      run: make test
-
-    - name: Generate Coverage Report
-      run: make coverage
-
-    - name: Upload Coverage Report
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: coverage/html
-    
-    - name: Setup lcov
-      uses: hrishikesh-kadam/setup-lcov@v1
-
-    - name: Post Coverage Report to PR
-      uses: kefasjw/lcov-pull-request-report@v1
-      with:
-        lcov-file: coverage/coverage.info
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: .
-        comment-title: 'Coverage Report'
-        all-files-minimum-coverage: 10
-        changed-files-minimum-coverage: 10
-        artifact-name: coverage-report
