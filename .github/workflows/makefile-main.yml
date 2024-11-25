@@ -43,7 +43,7 @@ jobs:
         which ez80-clang
         ez80-clang -v
         which ez80asm
-        ez80asm -v
+        ez80asm -h
 
     - name: Make All
       run: make all
