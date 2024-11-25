@@ -28,9 +28,6 @@ jobs:
         rm AgDev_release_v3.0.0_linux.zip
         echo "     ##### Updating GITHUB_PATH"
         echo "$(pwd)/agdev/bin" >> $GITHUB_PATH
-        echo "     ##### Checking ez80-clang"
-        $(pwd)/agdev/bin/ez80-clang -v
-        ez80-clang -v
 
         echo "##### Installing agon-ez80asm"
         mkdir -p agon-ez80asm
@@ -41,6 +38,13 @@ jobs:
         tar xpvf ez80asm_linux_elf_x86_64.tar
         rm ez80asm_linux_elf_x86_64.tar 
         echo "$(pwd)/bin" >> $GITHUB_PATH
+
+    - name: Check Binaries
+      run: |
+        echo "     ##### Checking Binaries"
+        which ez80-clang
+        ez80-clang -v
+        which ez80asm
         ez80asm -v
 
     - name: Make All
