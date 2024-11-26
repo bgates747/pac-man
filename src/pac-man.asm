@@ -42,6 +42,11 @@ game_loop:
     ld bc, high_score_data_end - high_score_data
     rst.lil $18
 
+    ; Show the sprite
+    ld hl, pac_man_data
+    ld bc, pac_man_data_end - pac_man_data
+    rst.lil $18
+
     ld a, mos_getkbmap
 	rst.lil $08
 
@@ -74,3 +79,24 @@ high_score_data:
     .db     31, 15, 0
     .db     "HIGH SCORE"
 high_score_data_end:
+
+pac_man:    EQU     0
+our_sprite: EQU     0
+
+pac_man_data:
+    .db 23, 0, 192, 0
+
+    .db 23, 27, 0, pac_man
+    .db 23, 27, 1
+    .dw 13, 13
+    incbin     "src/pac-man.data"
+
+    .db 23, 27, 4, our_sprite
+    .db 23, 27, 5
+    .db 23, 27, 6, pac_man
+    .db 23, 27, 7, 1
+    .db 23, 27, 11
+
+    .db 23, 27, 15
+
+pac_man_data_end:
