@@ -42,9 +42,14 @@ game_loop:
     ld bc, high_score_data_end - high_score_data
     rst.lil $18
 
-    ; Show the sprite
+    ; Show pac-man
     ld hl, pac_man_data
     ld bc, pac_man_data_end - pac_man_data
+    rst.lil $18
+
+    ; Show the red-ghost
+    ld hl, red_ghost_data
+    ld bc, red_ghost_data_end - red_ghost_data
     rst.lil $18
 
     ld a, mos_getkbmap
@@ -81,22 +86,50 @@ high_score_data:
 high_score_data_end:
 
 pac_man:    EQU     0
-our_sprite: EQU     0
+red_ghost:  EQU     1
+pac_man_sprite: EQU     0
+red_ghost_sprite: EQU     0
 
 pac_man_data:
     .db 23, 0, 192, 0
 
     .db 23, 27, 0, pac_man
     .db 23, 27, 1
-    .dw 13, 13
-    incbin     "src/pac-man.data"
+    .dw 12, 13
+    incbin     "src/data/pac-man.data"
 
-    .db 23, 27, 4, our_sprite
+    .db 23, 27, 4, pac_man_sprite
     .db 23, 27, 5
     .db 23, 27, 6, pac_man
     .db 23, 27, 7, 1
     .db 23, 27, 11
 
+    .db 23, 27, 4, pac_man_sprite
+    .db 23, 27, 13
+    .dw 150, 100
+
     .db 23, 27, 15
 
 pac_man_data_end:
+
+red_ghost_data:
+    .db 23, 0, 192, 0
+
+    .db 23, 27, 0, red_ghost
+    .db 23, 27, 1
+    .dw 14, 14
+    incbin     "src/data/red-ghost.data"
+
+    .db 23, 27, 4, red_ghost_sprite
+    .db 23, 27, 5
+    .db 23, 27, 6, red_ghost
+    .db 23, 27, 7, 1
+    .db 23, 27, 11
+
+    .db 23, 27, 4, red_ghost_sprite
+    .db 23, 27, 13
+    .dw 100, 90
+
+    .db 23, 27, 15
+
+red_ghost_data_end:
