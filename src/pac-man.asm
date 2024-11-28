@@ -22,6 +22,7 @@
     include "src/includes/screen.inc"
     include "src/includes/cursor.inc"
     include "src/includes/text.inc"
+    include "src/includes/sprite.inc"
 
 start:
     push af
@@ -35,22 +36,28 @@ start:
 
     call cursorHide
 
-game_loop:
+    ld hl, loadGraphics
+	ld bc, endLoadGraphics - loadGraphics
+	rst.lil $18
+
+    call setupSprites
+
+    ; Print the 1UP text
+    ld hl, up1_txt
+    ld bc, up1_txt_end - up1_txt
+    rst.lil $18
 
     ; Print the high score
     ld hl, high_score_data
     ld bc, high_score_data_end - high_score_data
     rst.lil $18
 
-    ; Show pac-man
-    ld hl, pac_man_data
-    ld bc, pac_man_data_end - pac_man_data
+    ; Print the 2UP text
+    ld hl, up2_txt
+    ld bc, up2_txt_end - up2_txt
     rst.lil $18
 
-    ; Show the red-ghost
-    ld hl, red_ghost_data
-    ld bc, red_ghost_data_end - red_ghost_data
-    rst.lil $18
+game_loop:
 
     ld a, mos_getkbmap
 	rst.lil $08
@@ -77,6 +84,12 @@ quit:
 
     ret
 
+setupSprites:				
+	ld hl, defineSprites
+	ld bc, endDefineSprites - defineSprites
+	rst.lil $18
+	ret 
+
 quit_msg:
     .db "Thank you for playing Pac-Man!",13,10,0
 
@@ -85,51 +98,26 @@ high_score_data:
     .db     "HIGH SCORE"
 high_score_data_end:
 
-pac_man:    EQU     0
-red_ghost:  EQU     1
-pac_man_sprite: EQU     0
-red_ghost_sprite: EQU     0
+up1_txt:
+    .db     31, 9, 0
+    .db     "1UP"
+up1_txt_end:
 
-pac_man_data:
-    .db 23, 0, 192, 0
+up2_txt:
+    .db     31, 28, 0
+    .db     "2UP"
+up2_txt_end:
 
-    .db 23, 27, 0, pac_man
-    .db 23, 27, 1
-    .dw 12, 13
-    incbin     "src/data/pac-man.data"
+loadGraphics:
+	MAKEBUFFEREDCELL64K 250, 0, 16, 16, "src/data/pac-man.rgba" 
+endLoadGraphics:
 
-    .db 23, 27, 4, pac_man_sprite
-    .db 23, 27, 5
-    .db 23, 27, 6, pac_man
-    .db 23, 27, 7, 1
-    .db 23, 27, 11
+defineSprites:
+	SELECT_SPRITE 0
+	CLEAR_CURRENT_SPRITE
 
-    .db 23, 27, 4, pac_man_sprite
-    .db 23, 27, 13
-    .dw 150, 100
+	ADD_SPRITE_FRAME 0
 
-    .db 23, 27, 15
+	ACTIVATE_SPRITES 1
 
-pac_man_data_end:
-
-red_ghost_data:
-    .db 23, 0, 192, 0
-
-    .db 23, 27, 0, red_ghost
-    .db 23, 27, 1
-    .dw 14, 14
-    incbin     "src/data/red-ghost.data"
-
-    .db 23, 27, 4, red_ghost_sprite
-    .db 23, 27, 5
-    .db 23, 27, 6, red_ghost
-    .db 23, 27, 7, 1
-    .db 23, 27, 11
-
-    .db 23, 27, 4, red_ghost_sprite
-    .db 23, 27, 13
-    .dw 100, 90
-
-    .db 23, 27, 15
-
-red_ghost_data_end:
+endDefineSprites:
