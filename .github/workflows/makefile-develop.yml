@@ -47,7 +47,7 @@ jobs:
         echo "##### Installing agon-ez80asm"
         mkdir -p agon-ez80asm
         cd agon-ez80asm
-        wget https://github.com/envenomator/agon-ez80asm/releases/download/v1.8/ez80asm_linux_elf_x86_64.gz
+        wget https://github.com/envenomator/agon-ez80asm/releases/download/v1.10/ez80asm_linux_elf_x86_64.gz
         tar zxpvf ez80asm_linux_elf_x86_64.gz
         rm ez80asm_linux_elf_x86_64.gz
         echo "$(pwd)/bin" >> $GITHUB_PATH
