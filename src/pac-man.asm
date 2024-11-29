@@ -36,11 +36,9 @@ start:
 
     call cursorHide
 
-    ld hl, loadGraphics
-	ld bc, endLoadGraphics - loadGraphics
-	rst.lil $18
-
-    call setupSprites
+    ld hl, VDUdata                      ; address of string to use
+    ld bc, endVDUdata - VDUdata         ; length of string
+    rst.lil $18                         ; Call the MOS API to send data to VDP
 
     ; Print the 1UP text
     ld hl, up1_txt
@@ -84,12 +82,6 @@ quit:
 
     ret
 
-setupSprites:				
-	ld hl, defineSprites
-	ld bc, endDefineSprites - defineSprites
-	rst.lil $18
-	ret 
-
 quit_msg:
     .db "Thank you for playing Pac-Man!",13,10,0
 
@@ -108,16 +100,128 @@ up2_txt:
     .db     "2UP"
 up2_txt_end:
 
-loadGraphics:
-	MAKEBUFFEREDCELL64K 250, 0, 16, 16, "src/data/pac-man.rgba" 
-endLoadGraphics:
+our_sprite: EQU     0                   ; sprite ID - always start at 0 upwards
 
-defineSprites:
-	SELECT_SPRITE 0
-	CLEAR_CURRENT_SPRITE
+VDUdata:
+    .db 23, 0, 192, 0                   ; set to non-scaled graphics
 
-	ADD_SPRITE_FRAME 0
+    .db 23, 0, $A0                      ; clear all buffers
+    .dw -1                              ; ID, -1 for ALL as a WORD
+    .db 2                               ; clear command
 
-	ACTIVATE_SPRITES 1
+    .db 23, 27, 16                      ; clear all sprite and bitmap data
 
-endDefineSprites:
+
+    ; ------------------
+    ; create buffered bitmaps
+
+    MAKEBUFFEREDBITMAP 64002, 16, 16, "src/assets/pac-man.rgba2" 
+    MAKEBUFFEREDBITMAP 64003, 16, 16, "src/assets/blinky.rgba2" 
+    MAKEBUFFEREDBITMAP 64004, 16, 16, "src/assets/pellet.rgba2"  
+
+    ; Maze bitmaps
+    MAKEBUFFEREDBITMAP 64020, 16, 16, "src/assets/close_wall.rgba2" 
+    MAKEBUFFEREDBITMAP 64021, 16, 16, "src/assets/close_straight_corner.rgba2"
+    MAKEBUFFEREDBITMAP 64022, 16, 16, "src/assets/close_rounded_corner.rgba2"
+
+    ; ------------------
+    ; SETUP THE SPRITE
+
+    SELECT_SPRITE 0
+    CLEAR_CURRENT_SPRITE
+    ADD_SPRITE_FRAME 64002
+    ACTIVATE_SPRITES 1
+    SHOW_CURRENT_SPRITE
+
+    MOVE_SPRITE 0, 140,90
+
+    SELECT_SPRITE 1
+    CLEAR_CURRENT_SPRITE
+    ADD_SPRITE_FRAME 64003
+    ACTIVATE_SPRITES 2
+    SHOW_CURRENT_SPRITE
+
+    MOVE_SPRITE 1, 100,30
+
+    ; ------------------
+    ; just PLOT a bitmap, not sprite
+
+    .db 23, 27, $20                     ; select bitmap
+    .dw 64004                           ; id WORD
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 148, 90                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 156, 90                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 164, 90                          ; at x,y WORDs
+
+    .db 23, 27, $20                     ; select bitmap
+    .dw 64022                           ; id WORD
+    .db 25, 237                         ; plot a bitmap
+    .dw 28, 209                          ; at x,y WORDs
+
+    .db 23, 27, $20                     ; select bitmap
+    .dw 64020                           ; id WORD
+    .db 25, 237                         ; plot a bitmap
+    .dw 39, 210                          ; at x,y WORDs
+    
+    .db 25, 237                         ; plot a bitmap
+    .dw 55, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 71, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 87, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 103, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 103, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 119, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 135, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 151, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 167, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 183, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 183, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 199, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 215, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 215, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 231, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 247, 210                          ; at x,y WORDs
+
+    .db 25, 237                         ; plot a bitmap
+    .dw 263, 210                          ; at x,y WORDs
+
+    .db 23, 27, $20                     ; select bitmap
+    .dw 64022                           ; id WORD
+    .db 25, 237                         ; plot a bitmap
+    .dw 279, 209                          ; at x,y WORDs
+
+endVDUdata:
