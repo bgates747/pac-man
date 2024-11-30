@@ -31,7 +31,7 @@ start:
     push ix
     push iy
 
-    setScreenMode SCREENMODE_320x240x64_60HZ
+    setScreenMode SCREENMODE_512x384x16_60HZ
     call setScreenScaling
 
     call cursorHide
