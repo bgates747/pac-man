@@ -38,7 +38,7 @@ def chop_image(source_dir, file_name, tile_width=16, tile_height=16, h_pitch=16,
             tile = img.crop((x, y, x + tile_width, y + tile_height))
             
             # Save the tile in the target directory
-            output_path = os.path.join(target_dir, f"{group_name}_{i}.png")
+            output_path = os.path.join(target_dir, f"{group_name}_{i:02}.png")
             tile.save(output_path)
             print(f"Saved {output_path} x={x} y={y}")
             
