@@ -21,7 +21,8 @@ def chop_and_deduplicate_tiles(source_dir, file_name, tile_width=8, tile_height=
         start_y (int): Starting y-coordinate of the grid.
     """
     source_path = os.path.join(source_dir, file_name)
-    target_dir = os.path.join(source_dir, os.path.splitext(file_name)[0])
+    base_file_name = os.path.splitext(file_name)[0]
+    target_dir = os.path.join(source_dir, base_file_name)
 
     # Delete and recreate the target directory
     if os.path.exists(target_dir):
@@ -55,7 +56,7 @@ def chop_and_deduplicate_tiles(source_dir, file_name, tile_width=8, tile_height=
             # Check if the tile is unique
             if tile_hash not in unique_tiles:
                 # Save the unique tile
-                output_path = os.path.join(target_dir, f"tile_{tile_count:02}.png")
+                output_path = os.path.join(target_dir, f"{base_file_name}_{tile_count:02}.png")
                 tile.save(output_path)
                 unique_tiles[tile_hash] = tile_count
                 tile_count += 1
@@ -67,10 +68,10 @@ def chop_and_deduplicate_tiles(source_dir, file_name, tile_width=8, tile_height=
         tile_map.append(",".join(row_tiles))
 
     # Save the map to a CSV file
-    save_csv_map(tile_map, os.path.join(target_dir, f"{os.path.splitext(file_name)[0]}.csv"))
+    save_csv_map(tile_map, os.path.join(target_dir, f"{base_file_name}.csv"))
 
     # Generate a review image of unique tiles
-    generate_review_image(unique_tiles, target_dir, tile_width, tile_height, columns=8)
+    generate_review_image(base_file_name, unique_tiles, target_dir, tile_width, tile_height, columns=8)
 
 def save_csv_map(tile_map, output_path):
     """
@@ -84,7 +85,7 @@ def save_csv_map(tile_map, output_path):
         csv_file.write("\n".join(tile_map))
     print(f"Saved CSV map to {output_path}")
 
-def generate_review_image(unique_tiles, target_dir, tile_width, tile_height, columns=8):
+def generate_review_image(base_file_name, unique_tiles, target_dir, tile_width, tile_height, columns=8):
     """
     Generates a single image containing all unique tiles for review.
 
@@ -99,7 +100,7 @@ def generate_review_image(unique_tiles, target_dir, tile_width, tile_height, col
     review_img = Image.new("RGBA", (columns * tile_width, rows * tile_height))
 
     for index, tile_file in enumerate(sorted(unique_tiles.values())):
-        tile_path = os.path.join(target_dir, f"tile_{tile_file:02}.png")
+        tile_path = os.path.join(target_dir, f"{base_file_name}_{tile_file:02}.png")
         tile = Image.open(tile_path)
         col = index % columns
         row = index // columns
@@ -110,4 +111,4 @@ def generate_review_image(unique_tiles, target_dir, tile_width, tile_height, col
     print(f"Saved review image to {review_img_path}")
 
 # Example usage
-chop_and_deduplicate_tiles("beegee747/src/assets/design/sprites", "maze_pellets.png")
+chop_and_deduplicate_tiles("beegee747/src/assets/design/sprites", "maze_path.png")

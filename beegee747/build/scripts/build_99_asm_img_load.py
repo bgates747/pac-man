@@ -28,7 +28,7 @@ def make_images(buffer_id, images_type, asm_images_filepath, originals_dir, orig
         # Convert .jpeg, .jpg, and .gif files to .png
         for input_image_filename in os.listdir(subdir_path):
             input_image_path = os.path.join(subdir_path, input_image_filename)
-            if input_image_filename.endswith(('.jpeg', '.jpg', '.gif')):
+            if input_image_filename.endswith(('.jpeg', '.jpg', '.gif')) and input_image_filename != 'review_image.png':
                 # Load the image
                 img = Image.open(input_image_path)
 
@@ -43,7 +43,7 @@ def make_images(buffer_id, images_type, asm_images_filepath, originals_dir, orig
 
         # Copy all .png files from the subdirectory to the output PNG directory
         for input_image_filename in os.listdir(subdir_path):
-            if input_image_filename.endswith('.png'):
+            if input_image_filename.endswith('.png') and input_image_filename != 'review_image.png':
                 input_image_path = os.path.join(subdir_path, input_image_filename)
                 output_image_path = os.path.join(output_dir_png, input_image_filename)
                 shutil.copy(input_image_path, output_image_path)
@@ -112,9 +112,9 @@ if __name__ == '__main__':
     buffer_id =             256
     images_type =           'sprites'
     asm_images_filepath =  f'beegee747/src/asm/images_{images_type}.inc'
-    originals_dir =        f'beegee747/assets'
-    originals_subdirs =    ['blinky', 'cherry', 'clyde', 'inky', 'maze', 'pac-man', 'pellet', 'pinky', 'power-pellet', 'reverse', 'strawberry']
-    output_dir_png =       f'beegee747/assets/proc/{images_type}'
+    originals_dir =        f'beegee747/src/assets/design/{images_type}'
+    originals_subdirs =    ['fruit','ghosts','maze_path','maze_pellets','maze_walls','pac']
+    output_dir_png =       f'beegee747/src/assets/proc/{images_type}'
     output_dir_rgba =      f'beegee747/tgt/{images_type}'
     palette_name =          'Agon64.gpl'
     palette_dir =           'beegee747/build/palettes'
