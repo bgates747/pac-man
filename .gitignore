@@ -23,3 +23,5 @@ obj
 release
 coverage
 test_runner*
+
+__pycache__
