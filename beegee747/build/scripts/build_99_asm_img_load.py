@@ -113,7 +113,7 @@ if __name__ == '__main__':
     images_type =           'sprites'
     asm_images_filepath =  f'beegee747/src/asm/images_{images_type}.inc'
     originals_dir =        f'beegee747/src/assets/design/{images_type}'
-    originals_subdirs =    ['fruit','ghosts','maze_pellets','maze_walls','pac']
+    originals_subdirs =    ['fruit','ghosts','maze_pellets','maze_walls','pac_big','pac_ded','pac_liv','pac_man']
     output_dir_png =       f'beegee747/src/assets/proc/{images_type}'
     output_dir_rgba =      f'beegee747/tgt/{images_type}'
     palette_name =          'Agon64.gpl'
