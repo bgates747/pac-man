@@ -11,7 +11,7 @@ maze_base_bufferId: equ 18
 ; outputs: pretty pixels
 ; destroys: all the things
 ; TODO: this could be significantly simplified if the null tile number 
-;       and low byte of the base bufferId are 0
+;       and low byte of the base bufferId are both 0
 draw_maze:
 ; initialize variables
     push ix
@@ -20,24 +20,20 @@ draw_maze:
     ld hl,0
     ld (iy+maze_x),hl
     ld (iy+maze_y),hl
-    ld l,(iy+maze_cols) ; l = num cols
-    ld h,(iy+maze_rows) ; h = num rows
+    ld l,(iy+maze_cols)
+    ld h,(iy+maze_rows)
 @loop:
     push hl ; row/col loop counter
     ld a,(ix) ; tile number
     cp (iy+maze_null_tile) ; is it the null tile?
-    jr z,@next_tile
+    jr z,@next_tile ; yes, so don't draw anything
     ld hl,(iy+maze_base_bufferId) ; base bufferId
     ld de,0 ; clear deu and d
     ld e,(ix) ; tile number
     add hl,de ; hl = tile bufferId
-    ; push hl ; DEBUG
     call vdu_buff_select
     ld bc,(iy+maze_x) ; x-coordinate
     ld de,(iy+maze_y) ; y-coordinate
-    ; pop hl ; DEBUG
-    ; call dumpRegistersHex ; DEBUG
-    ; call waitKeypress ; DEBUG
     call vdu_plot_bmp
 @next_tile:
     ld hl,(iy+maze_x) ; x-coordinate
@@ -48,12 +44,6 @@ draw_maze:
     pop hl ; row/col loop counter
     dec l
     jp nz,@loop
-; ; DEBUG
-;     push hl
-;     call dumpRegistersHex
-;     call waitKeypress
-;     pop hl
-; ; END DEBUG
     dec h
     ret z ; done
     ld l,(iy+maze_cols) ; number of columns
@@ -66,3 +56,40 @@ draw_maze:
     ld (iy+maze_x),hl ; x-coordinate = 0
     pop hl
     jp @loop
+
+; converts screen coordinates to map cell coordinates
+; inputs: ix = pointer to map defintion, ub.c = x-coordinate, ud.e = y-coordinate in 16.8 fixed point format
+; outputs: bc,de = row,col, hl = cell index, ix = pointer to cell data
+; destroys: a, hl, ix
+; notes: map and screen coordinates assume inverted y-axis with origin at top left
+;        tile size must be a power of two
+;        screen coordinates are treated as unsigned with no checks to the contrary
+screen_to_cell:
+; get the x-coordinate
+    push bc
+    pop hl
+    call hlu_udiv256 ; hl = int(x)
+    ld a,(ix+maze_tile_size)
+    call shr_hlu_log2a ; hl = int(int(x) / tile size) = col
+    ex de,hl ; uh.l = y-coordinate, de = col
+; get the y-coordinate
+    call hlu_udiv256 ; hl = int(y)
+    ld a,(ix+maze_tile_size)
+    call shr_hlu_log2a ; hl = int(int(y) / tile size) = row
+    push hl ; save row
+; compute cell index = row * cols + col
+; at this point hl = row, de = col
+    ld h,(ix+maze_cols)
+    mlt hl ; hl = row * cols
+    add hl,de ; hl = row * cols + col = cell index
+    ex de,hl ; de = cell index, hl = col
+; point to cell data
+    lea ix,ix+maze_base_bufferId+3
+    add ix,de
+; return results
+    ex de,hl ; de = col, hl = cell index
+    push de
+    pop bc ; bc = col
+    pop de ; de = row
+
+    ret

@@ -28,6 +28,7 @@ exit:
 ; API INCLUDES
     include "mos_api.inc"
     include "functions.inc"
+    include "arith24.inc"
     include "maths.inc"
     include "files.inc"
     include "fixed168.inc"
@@ -43,7 +44,9 @@ exit:
     include "enemies.inc"
     include "images_sprites.inc"
     include "maze.inc"
+    include "maze_index.inc" ; DEBUG
     include "maze_walls.inc"
+    include "maze_path.inc"
     include "maze_pellets.inc"
     include "player.inc"
     include "sprites.inc"
