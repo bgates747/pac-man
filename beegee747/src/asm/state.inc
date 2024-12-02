@@ -5,7 +5,10 @@ init_level: ; TODO: Implement level initialization
     ld ix,maze_walls
     ld hl,BUF_TILE_00
     call draw_maze
-    call waitKeypress
+    ld ix,maze_pellets
+    ld hl,BUF_MAZE_PELLETS_00
+    call draw_maze
+    ; call waitKeypress
 ; END DEBUG
     ret
 

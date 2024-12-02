@@ -24,6 +24,9 @@ draw_maze:
     ld h,(iy+maze_rows) ; h = num rows
 @loop:
     push hl ; row/col loop counter
+    ld a,(ix) ; tile number
+    cp (iy+maze_null_tile) ; is it the null tile?
+    jr z,@next_tile
     ld hl,(iy+maze_base_bufferId) ; base bufferId
     ld de,0 ; clear deu and d
     ld e,(ix) ; tile number
@@ -36,6 +39,7 @@ draw_maze:
     ; call dumpRegistersHex ; DEBUG
     ; call waitKeypress ; DEBUG
     call vdu_plot_bmp
+@next_tile:
     ld hl,(iy+maze_x) ; x-coordinate
     ld de,(iy+maze_tile_size) ; tile size
     add hl,de ; x-coordinate + tile size

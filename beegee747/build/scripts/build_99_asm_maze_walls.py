@@ -34,3 +34,12 @@ if __name__ == '__main__':
     asm_filepath =         f'beegee747/src/asm/{map_type}.inc'
 
     make_assembly_file(map_type, tile_size, maze_null_tile, base_bufferId, map_filepath, asm_filepath)
+
+    map_type =              'maze_pellets'
+    tile_size =             8
+    maze_null_tile =        0
+    base_bufferId =         'BUF_MAZE_PELLETS_00'
+    map_filepath =         f'beegee747/src/assets/design/sprites/{map_type}/{map_type}.csv'
+    asm_filepath =         f'beegee747/src/asm/{map_type}.inc'
+
+    make_assembly_file(map_type, tile_size, maze_null_tile, base_bufferId, map_filepath, asm_filepath)

@@ -44,6 +44,7 @@ exit:
     include "images_sprites.inc"
     include "maze.inc"
     include "maze_walls.inc"
+    include "maze_pellets.inc"
     include "player.inc"
     include "sprites.inc"
     include "state.inc"
