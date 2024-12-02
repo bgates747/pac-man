@@ -1,7 +1,7 @@
 ; ######## GAME STATE VARIABLES #######
 player_score: dl 0 ; integer
 player_lives: db 3 ; integer
-speed_player: equ 2*256 ; 2 pixels per frame 16.8 fixed
+speed_player: equ 1*256 ; 1 pixels per frame 16.8 fixed
 
 ; ######### PLAYER SPRITE PARAMETERS ##########
 ; uses the same offsets from its table base as the main sprite table:
@@ -19,20 +19,25 @@ player_xvel:             dl 0x000000 ; 3 bytes x-component velocity, 16.8 fixed,
 player_yvel:             dl 0x000000 ; 3 bytes y-component velocity, 16.8 fixed, pixels
 player_vel:              dl 0x000000 ; 3 bytes velocity px/frame (16.8 fixed)
 player_heading:          dl 0x000000 ; 3 bytes sprite movement direction deg256 16.8 fixed
-player_orientation:      dl 0x000000 ; 3 bytes not currently used
-player_animation:        db     0x00 ; 1 bytes not currently used
-player_animation_timer:  db     0x00 ; 1 bytes not currently used
+player_orientation:      dl 1 ; 3 bytes, low four bits are direction mask, bit 0 = right
+player_animation:        db     0x00 ; 1 bytes current animation index, zero-based
+player_animation_timer:  db     8 ; 1 bytes 
 player_move_timer:       db     0x00 ; 1 bytes not currently used
 player_move_step:        db     0x00 ; 1 bytes not currently used
 player_points:           db     0x00 ; 1 bytes not currently used
 player_shield_damage:    db     0x00 ; 1 bytes not currently used
 player_end_variables: ; for when we want to traverse this table in reverse
 
+orient_up: equ 2
+orient_left: equ 1
+orient_down: equ 3
+orient_right: equ 0
+
 ; set initial player position
 ; inputs: none,everything is hardcoded
 ; outputs: player_x/y set to bottom-left corner of screen
 ; destroys: a
-player_init: ; TODO: implement this
+player_init:
 	ld a,(player_id)
 	call vdu_sprite_select
     call vdu_sprite_clear_frames
@@ -40,7 +45,10 @@ player_init: ; TODO: implement this
     ld b,12 ; number of frames in the sprite
 @loop:
     push bc ; backup loop counter
+    push hl
     call vdu_sprite_add_buff
+    pop hl
+    inc hl
     pop bc
     djnz @loop
 ; initialize player position
@@ -54,6 +62,11 @@ player_init: ; TODO: implement this
     ld (player_state),hl
     ld hl,player_collisions
     set sprite_alive,(hl)
+
+; ; DEBUG
+;     ld hl,speed_player
+;     ld (player_xvel),hl
+; ; END DEBUG
     ret
 
 ; process player keyboard input, set player bitmap
@@ -64,79 +77,146 @@ player_init: ; TODO: implement this
 ; NOTE: in mode 9 we draw the player as a sprite, not a bitmap
 ; TODO: requires sprite implementation
 player_input:
-; ; did we die last frame?
-;     ld a,(player_collisions)
-;     and %00000010 ; zero flag will be set if not dead
-;     jr z,player_not_dead
-; ; yes we died
-;     call kill_player  
-;     ret ; done
-player_not_dead: ; yay we didn't die
-; reset player component velocities to zero as the default
-	ld hl,0
-	ld (player_xvel),hl
-	ld (player_yvel),hl
-; make player the active sprite
-    ld a,(player_id)
+; set player as the active sprite
+    ld iy,player_start_variables
+    ld (table_pointer),iy
+    ld a,(iy+sprite_id)
     call vdu_sprite_select
+; DEBUG
+    call vdu_home_cursor 
+; END DEBUG
+; did we die last frame?
+    ld a,(iy+sprite_collisions)
+    and %00000010 ; zero flag will be set if not dead
+    jr z,player_not_dead
+; yes we died
+    call kill_player  
+    ret ; done
+player_not_dead: ; yay we didn't die
 ; check for keypresses and branch accordingly
 ; for how this works,see: https://github.com/breakintoprogram/agon-docs/wiki/MOS-API-%E2%80%90-Virtual-Keyboard
     MOSCALL	mos_getkbmap ;ix = pointer to MOS virtual keys table
 ; we test all four arrow keys and add/subract velocities accordingly
 ; this handles the case where two opposing movement keys
 ; are down simultaneously (velocities will net to zero)
-; and allows diagonal movement when a vertical and horizontal key are down
-; it also allows movement and action keys to be detected simultaneously
-; so we can walk and chew gum at the same time
-    ld a,1 ; set player's default animation to center
-        ; if left and right are both down a will net to 
-
+    xor a ; reset orientation bits
 ; 26 Left: move player left
     bit 1,(ix+3)
     jp z,@F
-    ld hl,(player_xvel)
-    ld bc,-speed_player
-    add hl,bc
-    ld (player_xvel),hl
-    dec a ; set player's animation to left
+    set orient_left,a
 @@:
 ; 122 Right: move player right
     bit 1,(ix+15)
 	jp z,@F
-    ld hl,(player_xvel)
-    ld bc,speed_player
-    add hl,bc
-    ld (player_xvel),hl
-    inc a ; set player's animation to right
+    set orient_right,a
 @@:
 ; 58 Up: move player up
     bit 1,(ix+7)
 	jp z,@F
-    ld hl,(player_yvel)
-    ld bc,-speed_player
-    add hl,bc
-    ld (player_yvel),hl
+    set orient_up,a
 @@:
 ; 42 Down: move player down
     bit 1,(ix+5)
 	jp z,@F
-    ld hl,(player_yvel)
-    ld bc,speed_player
-    add hl,bc
-    ld (player_yvel),hl
+    set orient_down,a
 @@:
-; a should land here loaded with the correct frame
+; test for no keyboard input
+    and a
+    jp nz,@F ; we have input
+    ld a,(iy+sprite_orientation) ; use last orientation
+    jp @animation_timer
+@@:
+; test for more than one input key pressed
+    ld b,a
+    dec a
+    and a,b
+    ld a,b
+; zero means only one key pressed 
+; (or none, if we had not done the zero check above)
+    jp z,@animation_timer 
+    ld a,(iy+sprite_orientation) ; use last orientation
+    ; fall through to @animation_timer
+@animation_timer:
+    ld (iy+sprite_orientation),a
+; time to bump the animation frame?
+    dec (iy+sprite_animation_timer)
+    jp nz,@select_frame ; not time yet
+; reset animation timer
+    ld a,8
+    ld (iy+sprite_animation_timer),a
+; bump the animation frame
+    inc (iy+sprite_animation)
+; time to wrap around to first frame?
+    ld a,3
+    cp a,(iy+sprite_animation)
+    jp nz,@select_frame ; not time yet
+; reset animation frame
+    xor a
+    ld (iy+sprite_animation),a
+    ; fall through to @select_frame
+@select_frame:
+    ld a,(iy+sprite_orientation)
+; find which bit is set in orientation
+    ld l,0 ; bit counter
+@find_bit:
+    rrca ; bit 0 to carry
+    jp c,@found_bit
+    inc l ; next bit
+    jp @find_bit
+@found_bit:
+    ld h,3 ; three frames per orientation
+    mlt hl
+    ld a,(iy+sprite_animation)
+    add a,l
     call vdu_sprite_select_frame
+; set player velocities based on orientation
+    ld a,(iy+sprite_orientation)
+    ld hl,speed_player
+    call velocity_from_orientation
+    ld (iy+sprite_xvel),bc
+    ld (iy+sprite_yvel),de
 ; draw player at updated position
-    ld iy,player_start_variables
-    ld (table_pointer),iy
     call move_sprite
-    ld bc,(player_x)
-    ld de,(player_y)
+    ld bc,(iy+sprite_x)
+    ld de,(iy+sprite_y)
 	call vdu_sprite_move_abs168
 ; done
     ret
 ; end player_input
+
+; inputs: a = orientation, uh.l = speed in 16.8 fixed format
+; outputs: ub.c and ud.e are vel_x and vel_y in 16.8 fixed format
+velocity_from_orientation:
+; initialize velocities to zero
+    ld bc,0
+    ld de,0
+; test for orientation
+    bit orient_left,a
+    jp nz,@left
+    bit orient_right,a
+    jp nz,@right
+    bit orient_up,a
+    jp nz,@up
+    bit orient_down,a
+    jp nz,@down
+    ret ; no orientation set so velocities are zero
+@left:
+    call neg_hlu
+    push hl
+    pop bc
+    ret
+@right:
+    push hl
+    pop bc
+    ret
+@up:
+    call neg_hlu
+    ex de,hl
+    ret
+@down:
+    ex de,hl
+    ret
+; end velocity_from_orientation
 
 ; ###################################################################
 ; TODO: the below is all stuff from the original code we need to port

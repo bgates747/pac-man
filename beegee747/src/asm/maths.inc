@@ -4,7 +4,7 @@
 ; destroys: flags    
     MACRO sign_hlu
     add hl,de
-    or a
+    or a ; clear flags
     sbc hl,de
     ENDMACRO
 
