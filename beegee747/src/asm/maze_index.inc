@@ -1,4 +1,4 @@
-; for easy verification that screen_to_cell and other maze lookup functions work correctly
+; for easy verification that screen_to_map and other maze lookup functions work correctly
 
 maze_index:
 maze_index_num_cols: dl 28

@@ -246,3 +246,27 @@ shr_hlu_log2a:
 	pop 	bc ; restore
 	ret
 ; end shr_hlu_log2a
+
+;------------------------------------------------------------------------
+; shl_hlu_log2a: Quick multiplication by powers of two based on log2 of A
+;                Determines the LSB of A and shifts HLU accordingly.
+;                HLU = HLU << LSB(A)
+; Returns: HLU = HLU << LSB(A)
+; Destroys: af
+;------------------------------------------------------------------------
+shl_hlu_log2a:
+	or a    ; check for zero
+	ret z   ; nothing to shift so we're done
+	push 	bc ; preserve
+	ld		b,0 ; clear b
+@find_bit:
+	rrca ; bit 0 to carry
+	jp c,@found_bit
+	inc b ; next bit
+	jp @find_bit
+@found_bit:
+	ld a,b
+	call shl_hlu
+	pop 	bc ; restore
+	ret
+; end shl_hlu_log2a

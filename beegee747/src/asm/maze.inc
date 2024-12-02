@@ -64,7 +64,7 @@ draw_maze:
 ; notes: map and screen coordinates assume inverted y-axis with origin at top left
 ;        tile size must be a power of two
 ;        screen coordinates are treated as unsigned with no checks to the contrary
-screen_to_cell:
+screen_to_map:
 ; get the x-coordinate
     push bc
     pop hl
@@ -92,4 +92,24 @@ screen_to_cell:
     pop bc ; bc = col
     pop de ; de = row
 
+    ret
+
+; converts map cell coordinates to screen coordinates
+; inputs: ix = pointer to map definition, ub.c = col, ud.e = row in 16.8 fixed point format
+; outputs: bc,de = x,y as 24-bit integers
+; destroys: a, hl, bc
+map_to_screen:
+; get the x-coordinate
+    push bc
+    pop hl ; uh.l = col
+    ld a,(ix+maze_tile_size)
+    call shl_hlu_log2a ; uh.l = col * tile size
+    push hl ; save x-coordinate
+; get the y-coordinate
+    ex de,hl ; uh.l = row
+    ld a,(ix+maze_tile_size)
+    call shl_hlu_log2a ; uh.l = row * tile size
+; return results
+    ex de,hl ; de = y-coordinate
+    pop bc ; bc = x-coordinate
     ret

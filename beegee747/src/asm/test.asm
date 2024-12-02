@@ -58,12 +58,20 @@ init:
 main:
     call printNewLine
     ld ix,maze_index
-    ld bc,0x003733 ; 55.2
-    ld de,0x001666 ; 22.4
-    call screen_to_cell
-    ld a,(ix)
+    ld bc,0x000324 ; 3.142
+    ld de,0x0002B7 ; 2.718
+    call map_to_screen
     call dumpRegistersHex
     call printNewLine
+
+    ; call printNewLine
+    ; ld ix,maze_index
+    ; ld bc,0x003733 ; 55.2
+    ; ld de,0x001666 ; 22.4
+    ; call screen_to_map
+    ; ld a,(ix)
+    ; call dumpRegistersHex
+    ; call printNewLine
 
 main_end:
     ret
