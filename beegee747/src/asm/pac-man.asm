@@ -42,6 +42,8 @@ exit:
     include "collisions.inc"
     include "enemies.inc"
     include "images_sprites.inc"
+    include "maze.inc"
+    include "maze_walls.inc"
     include "player.inc"
     include "sprites.inc"
     include "state.inc"
@@ -80,14 +82,14 @@ init:
 ; set the cursor off
     call vdu_cursor_off
 
-; VDU 28, left, bottom, right, top: Set text viewport **
-; MIND THE LITTLE-ENDIANESS
-; inputs: c=left,b=bottom,e=right,d=top
-    ld c,0 ; left
-    ld d,29 ; top
-    ld e,39 ; right
-    ld b,29; bottom
-    call vdu_set_txt_viewport
+; ; VDU 28, left, bottom, right, top: Set text viewport **
+; ; MIND THE LITTLE-ENDIANESS
+; ; inputs: c=left,b=bottom,e=right,d=top
+;     ld c,0 ; left
+;     ld d,29 ; top
+;     ld e,39 ; right
+;     ld b,29; bottom
+;     call vdu_set_txt_viewport
 
 ; ; print loading ui message
 ;     ld hl,loading_ui
@@ -153,12 +155,12 @@ init:
     ld a,26+128 ; violet
     call vdu_gcol
     call vdu_clg
-; VDU 28, left, bottom, right, top: Set text viewport **
-    ld c,0 ; left
-    ld d,0 ; top
-    ld e,62 ; right
-    ld b,7; bottom
-    call vdu_set_txt_viewport
+; ; VDU 28, left, bottom, right, top: Set text viewport **
+;     ld c,0 ; left
+;     ld d,0 ; top
+;     ld e,62 ; right
+;     ld b,7; bottom
+;     call vdu_set_txt_viewport
 
 ; initialize the global timestamp
     call timestamp_tick

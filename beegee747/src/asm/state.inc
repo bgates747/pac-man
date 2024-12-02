@@ -1,6 +1,12 @@
 cur_level: db 0
 
 init_level: ; TODO: Implement level initialization
+; BEGIN DEBUG
+    ld ix,maze_walls
+    ld hl,BUF_TILE_00
+    call draw_maze
+    call waitKeypress
+; END DEBUG
     ret
 
 ; Game state variables
