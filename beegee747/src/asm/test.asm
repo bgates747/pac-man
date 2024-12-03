@@ -60,9 +60,17 @@ main:
     ld ix,maze_index
     ld bc,0x000324 ; 3.142
     ld de,0x0002B7 ; 2.718
-    call map_to_screen
+    call map_get_cell
     call dumpRegistersHex
     call printNewLine
+
+    ; call printNewLine
+    ; ld ix,maze_index
+    ; ld bc,0x000324 ; 3.142
+    ; ld de,0x0002B7 ; 2.718
+    ; call map_to_screen
+    ; call dumpRegistersHex
+    ; call printNewLine
 
     ; call printNewLine
     ; ld ix,maze_index

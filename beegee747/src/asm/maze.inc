@@ -97,7 +97,7 @@ screen_to_map:
 ; converts map cell coordinates to screen coordinates
 ; inputs: ix = pointer to map definition, ub.c = col, ud.e = row in 16.8 fixed point format
 ; outputs: bc,de = x,y as 24-bit integers
-; destroys: a, hl, bc
+; destroys: a, hl, bc, de
 map_to_screen:
 ; get the x-coordinate
     push bc
@@ -113,3 +113,26 @@ map_to_screen:
     ex de,hl ; de = y-coordinate
     pop bc ; bc = x-coordinate
     ret
+
+; get a pointer to a map cell from col and row input
+; by computing cell index = row * cols + col
+; inputs: ix = pointer to map definition, ub.c = col, ud.e = row in 16.8 fixed point format
+; returns: ix = pointer to cell data, hl = cell index, a = cell value
+; destroys: a, hl, ix
+map_get_cell:
+    ld l,d ; int(row)
+    ld h,(ix+maze_cols)
+    mlt hl ; row * cols
+    ld a,b ; int(col)
+    add a,l 
+    ld l,a
+    ld a,0 ; we need carry
+    adc a,h
+    ld h,a ; hl = cell index
+    ex de,hl ; can't add ix,hl
+    lea ix,ix+maze_base_bufferId+3 ; point to cell 0
+    add ix,de ; point to cell data
+    ld a,(ix) ; cell value
+    ex de,hl ; restore de, hl = cell index
+    ret
+; end map_get_cell

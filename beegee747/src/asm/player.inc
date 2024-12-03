@@ -1,7 +1,7 @@
 ; ######## GAME STATE VARIABLES #######
 player_score: dl 0 ; integer
 player_lives: db 3 ; integer
-speed_player: equ 1*256 ; 1 pixels per frame 16.8 fixed
+speed_player: equ 0x000020 ; 0.125 map units per frame 16.8 fixed
 
 ; ######### PLAYER SPRITE PARAMETERS ##########
 ; uses the same offsets from its table base as the main sprite table:
@@ -13,8 +13,8 @@ player_move_program:     dl 0x000000 ; 3 bytes not currently used
 player_collisions:       db     0x00 ; 1 bytes uses sprite_alive and sprite_just_died flags
 player_dim_x:            db     0x00 ; 1 bytes sprite width in pixels
 player_dim_y:            db     0x00 ; 1 bytes sprite height in pixels
-player_x:                dl 0x000000 ; 3 bytes 16.8 fractional x position in pixels
-player_y:                dl 0x000000 ; 3 bytes 16.8 fractional y position in pixels
+player_x:                dl 0x000D00 ; 13 ; 3 bytes 16.8 fractional x position in pixels
+player_y:                dl 0x001700 ; 23 ; 3 bytes 16.8 fractional y position in pixels
 player_xvel:             dl 0x000000 ; 3 bytes x-component velocity, 16.8 fixed, pixels
 player_yvel:             dl 0x000000 ; 3 bytes y-component velocity, 16.8 fixed, pixels
 player_vel:              dl 0x000000 ; 3 bytes velocity px/frame (16.8 fixed)
@@ -52,10 +52,10 @@ player_init:
     pop bc
     djnz @loop
 ; initialize player position
-    ld bc,0
-    ld (player_x),bc
-    ld de,sprite_bottom*256 ; max sprite y-coordinate
-    ld (player_y),de
+    ld bc,0x000D00 ; 13
+    ld de,0x001700 ; 23
+    ld ix,maze_path
+    call map_to_screen
     call vdu_sprite_move_abs168
     call vdu_sprite_show
     ld hl,player_alive
@@ -179,6 +179,8 @@ player_not_dead: ; yay we didn't die
     call move_sprite
     ld bc,(iy+sprite_x)
     ld de,(iy+sprite_y)
+    ld ix,maze_path
+    call map_to_screen
 	call vdu_sprite_move_abs168
 ; done
     ret
