@@ -1,15 +1,21 @@
 cur_level: db 0
 
-init_level: ; TODO: Implement level initialization
-; BEGIN DEBUG
+init_level:
+; offset gfx origin to account for sprite size
+    ld bc,origin_left
+    ld de,origin_top+5 ; TODO: this is a weird value, is it legit?
+    call vdu_set_gfx_origin
+; draw maze and pellets
     ld ix,maze_walls
     ld hl,BUF_TILE_00
     call draw_maze
     ld ix,maze_pellets
     ld hl,BUF_MAZE_PELLETS_00
     call draw_maze
-    ; call waitKeypress
-; END DEBUG
+; restore gfx origin to normal
+    ld bc,origin_left
+    ld de,origin_top
+    call vdu_set_gfx_origin
     ret
 
 ; Game state variables

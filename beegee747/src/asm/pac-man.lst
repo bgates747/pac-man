@@ -27,8 +27,8 @@ PC     Output      Line
 040047 D5          0012       push de
 040048 DD E5       0013       push ix
 04004A FD E5       0014       push iy
-04004C CD 4E 43 04 0015       call init
-040050 CD D0 43 04 0016       call main
+04004C CD 66 43 04 0015       call init
+040050 CD E8 43 04 0016       call main
 040054             0017   
 040054             0018   exit:
 040054 FD E1       0019       pop iy
@@ -5167,8 +5167,8 @@ PC     Output      Line
 041B22 3A DF 40 04 0015*      ld a,(table_active_sprites)
 041B26 A7          0016*      and a ; will be zero if no alive enemies or explosions
 041B27 C2 34 1B 04 0017*      jp nz,@they_live
-041B2B 21 01 43 04 0018*      ld hl,enemies_dead
-041B2F 22 FE 42 04 0019*      ld (enemies_state),hl
+041B2B 21 19 43 04 0018*      ld hl,enemies_dead
+041B2F 22 16 43 04 0019*      ld (enemies_state),hl
 041B33 C9          0020*      ret
 041B34             0021*  @they_live:
 041B34             0022*  ; initialize pointers and loop counter
@@ -7787,8 +7787,8 @@ PC     Output      Line
 043D41 CD DC 2E 04 0058*      call map_to_screen
 043D45 CD 51 1A 04 0059*      call vdu_sprite_move_abs168
 043D49 CD FB 19 04 0060*      call vdu_sprite_show
-043D4D 21 ED 42 04 0061*      ld hl,player_alive
-043D51 22 DF 42 04 0062*      ld (player_state),hl
+043D4D 21 05 43 04 0061*      ld hl,player_alive
+043D51 22 F7 42 04 0062*      ld (player_state),hl
 043D55 21 F9 3C 04 0063*      ld hl,player_collisions
 043D59 CB F6       0064*      set sprite_alive,(hl)
 043D5B             0065*  
@@ -8445,376 +8445,382 @@ PC     Output      Line
 04420C             0053       include "state.inc"
 04420C 00          0001*  cur_level: db 0
 04420D             0002*  
-04420D             0003*  init_level: ; TODO: Implement level initialization
-04420D             0004*  ; BEGIN DEBUG
-04420D DD 21 82 32 0005*      ld ix,maze_walls
+04420D             0003*  init_level:
+04420D             0004*  ; offset gfx origin to account for sprite size
+04420D 01 80 00 00 0005*      ld bc,origin_left
+044211 11 05 00 00 0006*      ld de,origin_top+5 ; TODO: this is a weird value, is it legit?
+044215 CD 20 15 04 0007*      call vdu_set_gfx_origin
+044219             0008*  ; draw maze and pellets
+044219 DD 21 82 32 0009*      ld ix,maze_walls
        04          
-044212 21 4E 01 00 0006*      ld hl,BUF_TILE_00
-044216 CD 4A 2E 04 0007*      call draw_maze
-04421A DD 21 74 39 0008*      ld ix,maze_pellets
+04421E 21 4E 01 00 0010*      ld hl,BUF_TILE_00
+044222 CD 4A 2E 04 0011*      call draw_maze
+044226 DD 21 74 39 0012*      ld ix,maze_pellets
        04          
-04421F 21 20 01 00 0009*      ld hl,BUF_MAZE_PELLETS_00
-044223 CD 4A 2E 04 0010*      call draw_maze
-044227             0011*      ; call waitKeypress
-044227             0012*  ; END DEBUG
-044227 C9          0013*      ret
-044228             0014*  
-044228             0015*  ; Game state variables
-044228 36 42 04    0016*  game_state:  dl game_main_menu
-04422B             0017*  
-04422B             0018*  do_game:
-04422B 2A 28 42 04 0019*      ld hl,(game_state)   ; Load the current game state
-04422F             0020*      callHL                ; Call the corresponding state handler
-04422F 01 35 42 04 0001*M     ld bc,@F ; Address of first instruction after the jump
-044233 C5          0002*M     push bc ; which constitutes the return address
-044234 E9          0003*M     jp (hl) ; Jump to the address in HL
-044235             0004*M @@:
-044235 C9          0021*      ret
-044236             0022*  
-044236             0023*  ; ========================
-044236             0024*  ; Main Game States
-044236             0025*  ; ========================
-044236             0026*  
-044236             0027*  game_main_menu:
-044236             0028*      ; Handle main menu options
-044236             0029*      ; Example: Check input for "Start Game"
-044236 CD 07 43 04 0030*      call check_input_menu
-04423A C2 3F 42 04 0031*      jp nz, game_initialize ; Start game on selection
-04423E C9          0032*      ret
-04423F             0033*  
-04423F             0034*  game_initialize:
-04423F             0035*  ; reset the sprite table
-04423F AF          0036*      xor a
-044240 32 DF 40 04 0037*      ld (table_active_sprites),a
-044244 21 7C 3E 04 0038*      ld hl,table_base
-044248 22 DC 40 04 0039*      ld (table_pointer),hl
-04424C             0040*  ; initialize sprites
-04424C CD 36 41 04 0041*      call sprites_init
-044250             0042*  ; initialize the first level
-044250 AF          0043*      xor a
-044251 32 0C 42 04 0044*      ld (cur_level),a
-044255 CD 0D 42 04 0045*      call init_level
-044259             0046*  ; initialize player
-044259 21 00 00 00 0047*      ld hl,0
-04425D 22 ED 3C 04 0048*      ld (player_score),hl
-044261 3E 03       0049*      ld a,3
-044263 32 F0 3C 04 0050*      ld (player_lives),a
-044267 CD 17 3D 04 0051*      call player_init
-04426B             0052*  ; set the game state to playing
-04426B 21 75 42 04 0053*      ld hl,game_playing
-04426F 22 28 42 04 0054*      ld (game_state), hl
-044273 C9          0055*      ret
-044274             0056*  ; done initializing
-044274 C9          0057*      ret
-044275             0058*  
-044275             0059*  game_playing:
-044275             0060*  ; Main gameplay loop
-044275 CD E2 42 04 0061*      call do_player
-044279 CD F3 42 04 0062*      call do_enemies
-04427D             0063*  ; update UI: TODO make this a standalone function
-04427D CD 58 3E 04 0064*      call print_score
-044281 C9          0065*      ret
-044282             0066*  
-044282             0067*  game_paused:
-044282             0068*      ; Pause menu logic
-044282 CD 0A 43 04 0069*      call check_input_pause
-044286 C2 75 42 04 0070*      jp nz, game_playing ; Resume game
-04428A CA 36 42 04 0071*      jp z, game_main_menu ; Exit to main menu
-04428E C9          0072*      ret
-04428F             0073*  
-04428F             0074*  game_level_transition:
-04428F             0075*      ; Handle level transitions
-04428F CD 0B 43 04 0076*      call load_next_level
-044293 21 75 42 04 0077*      ld hl, game_playing
-044297 22 28 42 04 0078*      ld (game_state), hl
-04429B C9          0079*      ret
-04429C             0080*  
-04429C             0081*  game_over:
-04429C             0082*      ; Display game over screen
-04429C CD 0C 43 04 0083*      call display_game_over
-0442A0 C2 36 42 04 0084*      jp nz, game_main_menu ; Return to main menu on input
-0442A4 C9          0085*      ret
-0442A5             0086*  
-0442A5             0087*  game_victory:
-0442A5             0088*      ; Display victory screen
-0442A5 CD 0D 43 04 0089*      call display_victory
-0442A9 C2 36 42 04 0090*      jp nz, game_main_menu ; Return to main menu on input
-0442AD C9          0091*      ret
-0442AE             0092*  
-0442AE             0093*  ; ========================
-0442AE             0094*  ; Supporting States
-0442AE             0095*  ; ========================
-0442AE             0096*  
-0442AE             0097*  game_loading:
-0442AE             0098*      ; Show loading screen while preparing assets
-0442AE CD 0E 43 04 0099*      call load_resources
-0442B2 21 3F 42 04 0100*      ld hl, game_initialize
-0442B6 22 28 42 04 0101*      ld (game_state), hl
-0442BA C9          0102*      ret
-0442BB             0103*  
-0442BB             0104*  game_cutscene:
-0442BB             0105*      ; Play a non-interactive cutscene
-0442BB CD 0F 43 04 0106*      call play_cutscene
-0442BF C2 75 42 04 0107*      jp nz, game_playing ; Return to gameplay after cutscene
-0442C3 C9          0108*      ret
-0442C4             0109*  
-0442C4             0110*  game_inventory:
-0442C4             0111*      ; Open inventory or shop
-0442C4 CD 10 43 04 0112*      call display_inventory
-0442C8 C2 75 42 04 0113*      jp nz, game_playing ; Return to gameplay after inventory close
-0442CC C9          0114*      ret
-0442CD             0115*  
-0442CD             0116*  game_map:
-0442CD             0117*      ; Display map or quest
-0442CD CD 11 43 04 0118*      call display_map
-0442D1 C2 75 42 04 0119*      jp nz, game_playing ; Return to gameplay after map close
-0442D5 C9          0120*      ret
-0442D6             0121*  
-0442D6             0122*  game_exit:
-0442D6             0123*      ; Handle exit logic
-0442D6 CD 12 43 04 0124*      call save_game
-0442DA C3 13 43 04 0125*      jp exit_game         ; Safely shut down
-0442DE C9          0126*      ret
-0442DF             0127*  
-0442DF             0128*  ; ========================
-0442DF             0129*  ; Sub-state branching (Example for player state)
-0442DF             0130*  ; ========================
-0442DF             0131*  
-0442DF ED 42 04    0132*  player_state:  dl player_alive ; Player state variable
-0442E2             0133*  
-0442E2             0134*  do_player:
-0442E2 2A DF 42 04 0135*      ld hl,(player_state)
-0442E6             0136*      callHL                ; Call the corresponding player state
-0442E6 01 EC 42 04 0001*M     ld bc,@F ; Address of first instruction after the jump
-0442EA C5          0002*M     push bc ; which constitutes the return address
-0442EB E9          0003*M     jp (hl) ; Jump to the address in HL
-0442EC             0004*M @@:
-0442EC C9          0137*      ret
-0442ED             0138*  
-0442ED             0139*  player_alive:
-0442ED CD 5C 3D 04 0140*      call player_input     ; Handle player input
-0442F1 C9          0141*      ret
-0442F2             0142*  
-0442F2             0143*  player_dead:
-0442F2 C9          0144*      ret
-0442F3             0145*  
-0442F3             0146*  do_enemies:
-0442F3 2A FE 42 04 0147*      ld hl, (enemies_state)
-0442F7             0148*      callHL
-0442F7 01 FD 42 04 0001*M     ld bc,@F ; Address of first instruction after the jump
-0442FB C5          0002*M     push bc ; which constitutes the return address
-0442FC E9          0003*M     jp (hl) ; Jump to the address in HL
-0442FD             0004*M @@:
-0442FD C9          0149*      ret
-0442FE 01 43 04    0150*  enemies_state: dl enemies_dead
-044301             0151*  enemies_dead:
-044301 C9          0152*      ret
-044302             0153*  
-044302             0154*  enemies_alive:
-044302 CD 22 1B 04 0155*      call move_enemies
-044306 C9          0156*      ret
-044307             0157*  
-044307             0158*  check_input_menu:
-044307 C9          0159*      ret
-044308             0160*  
-044308             0161*  update_game_world:
-044308 C9          0162*      ret
-044309             0163*  
-044309             0164*  check_game_events:
-044309 C9          0165*      ret
-04430A             0166*  
-04430A             0167*  check_input_pause:
-04430A C9          0168*      ret
-04430B             0169*  
-04430B             0170*  load_next_level:
-04430B C9          0171*      ret
-04430C             0172*  
-04430C             0173*  display_game_over:
-04430C C9          0174*      ret
-04430D             0175*  
-04430D             0176*  display_victory:
-04430D C9          0177*      ret
-04430E             0178*  
-04430E             0179*  load_resources:
-04430E C9          0180*      ret
-04430F             0181*  
-04430F             0182*  play_cutscene:
-04430F C9          0183*      ret
-044310             0184*  
-044310             0185*  display_inventory:
-044310 C9          0186*      ret
-044311             0187*  
-044311             0188*  display_map:
-044311 C9          0189*      ret
-044312             0190*  
-044312             0191*  save_game:
-044312 C9          0192*      ret
-044313             0193*  
-044313             0194*  exit_game:
-044313 C9          0195*      ret
-044314             0196*  
-044314             0054   
-044314 57 65 6C 63 0055   hello_world: asciz "Welcome to Pac-Man!"
+04422B 21 20 01 00 0013*      ld hl,BUF_MAZE_PELLETS_00
+04422F CD 4A 2E 04 0014*      call draw_maze
+044233             0015*  ; restore gfx origin to normal
+044233 01 80 00 00 0016*      ld bc,origin_left
+044237 11 00 00 00 0017*      ld de,origin_top
+04423B CD 20 15 04 0018*      call vdu_set_gfx_origin
+04423F C9          0019*      ret
+044240             0020*  
+044240             0021*  ; Game state variables
+044240 4E 42 04    0022*  game_state:  dl game_main_menu
+044243             0023*  
+044243             0024*  do_game:
+044243 2A 40 42 04 0025*      ld hl,(game_state)   ; Load the current game state
+044247             0026*      callHL                ; Call the corresponding state handler
+044247 01 4D 42 04 0001*M     ld bc,@F ; Address of first instruction after the jump
+04424B C5          0002*M     push bc ; which constitutes the return address
+04424C E9          0003*M     jp (hl) ; Jump to the address in HL
+04424D             0004*M @@:
+04424D C9          0027*      ret
+04424E             0028*  
+04424E             0029*  ; ========================
+04424E             0030*  ; Main Game States
+04424E             0031*  ; ========================
+04424E             0032*  
+04424E             0033*  game_main_menu:
+04424E             0034*      ; Handle main menu options
+04424E             0035*      ; Example: Check input for "Start Game"
+04424E CD 1F 43 04 0036*      call check_input_menu
+044252 C2 57 42 04 0037*      jp nz, game_initialize ; Start game on selection
+044256 C9          0038*      ret
+044257             0039*  
+044257             0040*  game_initialize:
+044257             0041*  ; reset the sprite table
+044257 AF          0042*      xor a
+044258 32 DF 40 04 0043*      ld (table_active_sprites),a
+04425C 21 7C 3E 04 0044*      ld hl,table_base
+044260 22 DC 40 04 0045*      ld (table_pointer),hl
+044264             0046*  ; initialize sprites
+044264 CD 36 41 04 0047*      call sprites_init
+044268             0048*  ; initialize the first level
+044268 AF          0049*      xor a
+044269 32 0C 42 04 0050*      ld (cur_level),a
+04426D CD 0D 42 04 0051*      call init_level
+044271             0052*  ; initialize player
+044271 21 00 00 00 0053*      ld hl,0
+044275 22 ED 3C 04 0054*      ld (player_score),hl
+044279 3E 03       0055*      ld a,3
+04427B 32 F0 3C 04 0056*      ld (player_lives),a
+04427F CD 17 3D 04 0057*      call player_init
+044283             0058*  ; set the game state to playing
+044283 21 8D 42 04 0059*      ld hl,game_playing
+044287 22 40 42 04 0060*      ld (game_state), hl
+04428B C9          0061*      ret
+04428C             0062*  ; done initializing
+04428C C9          0063*      ret
+04428D             0064*  
+04428D             0065*  game_playing:
+04428D             0066*  ; Main gameplay loop
+04428D CD FA 42 04 0067*      call do_player
+044291 CD 0B 43 04 0068*      call do_enemies
+044295             0069*  ; update UI: TODO make this a standalone function
+044295 CD 58 3E 04 0070*      call print_score
+044299 C9          0071*      ret
+04429A             0072*  
+04429A             0073*  game_paused:
+04429A             0074*      ; Pause menu logic
+04429A CD 22 43 04 0075*      call check_input_pause
+04429E C2 8D 42 04 0076*      jp nz, game_playing ; Resume game
+0442A2 CA 4E 42 04 0077*      jp z, game_main_menu ; Exit to main menu
+0442A6 C9          0078*      ret
+0442A7             0079*  
+0442A7             0080*  game_level_transition:
+0442A7             0081*      ; Handle level transitions
+0442A7 CD 23 43 04 0082*      call load_next_level
+0442AB 21 8D 42 04 0083*      ld hl, game_playing
+0442AF 22 40 42 04 0084*      ld (game_state), hl
+0442B3 C9          0085*      ret
+0442B4             0086*  
+0442B4             0087*  game_over:
+0442B4             0088*      ; Display game over screen
+0442B4 CD 24 43 04 0089*      call display_game_over
+0442B8 C2 4E 42 04 0090*      jp nz, game_main_menu ; Return to main menu on input
+0442BC C9          0091*      ret
+0442BD             0092*  
+0442BD             0093*  game_victory:
+0442BD             0094*      ; Display victory screen
+0442BD CD 25 43 04 0095*      call display_victory
+0442C1 C2 4E 42 04 0096*      jp nz, game_main_menu ; Return to main menu on input
+0442C5 C9          0097*      ret
+0442C6             0098*  
+0442C6             0099*  ; ========================
+0442C6             0100*  ; Supporting States
+0442C6             0101*  ; ========================
+0442C6             0102*  
+0442C6             0103*  game_loading:
+0442C6             0104*      ; Show loading screen while preparing assets
+0442C6 CD 26 43 04 0105*      call load_resources
+0442CA 21 57 42 04 0106*      ld hl, game_initialize
+0442CE 22 40 42 04 0107*      ld (game_state), hl
+0442D2 C9          0108*      ret
+0442D3             0109*  
+0442D3             0110*  game_cutscene:
+0442D3             0111*      ; Play a non-interactive cutscene
+0442D3 CD 27 43 04 0112*      call play_cutscene
+0442D7 C2 8D 42 04 0113*      jp nz, game_playing ; Return to gameplay after cutscene
+0442DB C9          0114*      ret
+0442DC             0115*  
+0442DC             0116*  game_inventory:
+0442DC             0117*      ; Open inventory or shop
+0442DC CD 28 43 04 0118*      call display_inventory
+0442E0 C2 8D 42 04 0119*      jp nz, game_playing ; Return to gameplay after inventory close
+0442E4 C9          0120*      ret
+0442E5             0121*  
+0442E5             0122*  game_map:
+0442E5             0123*      ; Display map or quest
+0442E5 CD 29 43 04 0124*      call display_map
+0442E9 C2 8D 42 04 0125*      jp nz, game_playing ; Return to gameplay after map close
+0442ED C9          0126*      ret
+0442EE             0127*  
+0442EE             0128*  game_exit:
+0442EE             0129*      ; Handle exit logic
+0442EE CD 2A 43 04 0130*      call save_game
+0442F2 C3 2B 43 04 0131*      jp exit_game         ; Safely shut down
+0442F6 C9          0132*      ret
+0442F7             0133*  
+0442F7             0134*  ; ========================
+0442F7             0135*  ; Sub-state branching (Example for player state)
+0442F7             0136*  ; ========================
+0442F7             0137*  
+0442F7 05 43 04    0138*  player_state:  dl player_alive ; Player state variable
+0442FA             0139*  
+0442FA             0140*  do_player:
+0442FA 2A F7 42 04 0141*      ld hl,(player_state)
+0442FE             0142*      callHL                ; Call the corresponding player state
+0442FE 01 04 43 04 0001*M     ld bc,@F ; Address of first instruction after the jump
+044302 C5          0002*M     push bc ; which constitutes the return address
+044303 E9          0003*M     jp (hl) ; Jump to the address in HL
+044304             0004*M @@:
+044304 C9          0143*      ret
+044305             0144*  
+044305             0145*  player_alive:
+044305 CD 5C 3D 04 0146*      call player_input     ; Handle player input
+044309 C9          0147*      ret
+04430A             0148*  
+04430A             0149*  player_dead:
+04430A C9          0150*      ret
+04430B             0151*  
+04430B             0152*  do_enemies:
+04430B 2A 16 43 04 0153*      ld hl, (enemies_state)
+04430F             0154*      callHL
+04430F 01 15 43 04 0001*M     ld bc,@F ; Address of first instruction after the jump
+044313 C5          0002*M     push bc ; which constitutes the return address
+044314 E9          0003*M     jp (hl) ; Jump to the address in HL
+044315             0004*M @@:
+044315 C9          0155*      ret
+044316 19 43 04    0156*  enemies_state: dl enemies_dead
+044319             0157*  enemies_dead:
+044319 C9          0158*      ret
+04431A             0159*  
+04431A             0160*  enemies_alive:
+04431A CD 22 1B 04 0161*      call move_enemies
+04431E C9          0162*      ret
+04431F             0163*  
+04431F             0164*  check_input_menu:
+04431F C9          0165*      ret
+044320             0166*  
+044320             0167*  update_game_world:
+044320 C9          0168*      ret
+044321             0169*  
+044321             0170*  check_game_events:
+044321 C9          0171*      ret
+044322             0172*  
+044322             0173*  check_input_pause:
+044322 C9          0174*      ret
+044323             0175*  
+044323             0176*  load_next_level:
+044323 C9          0177*      ret
+044324             0178*  
+044324             0179*  display_game_over:
+044324 C9          0180*      ret
+044325             0181*  
+044325             0182*  display_victory:
+044325 C9          0183*      ret
+044326             0184*  
+044326             0185*  load_resources:
+044326 C9          0186*      ret
+044327             0187*  
+044327             0188*  play_cutscene:
+044327 C9          0189*      ret
+044328             0190*  
+044328             0191*  display_inventory:
+044328 C9          0192*      ret
+044329             0193*  
+044329             0194*  display_map:
+044329 C9          0195*      ret
+04432A             0196*  
+04432A             0197*  save_game:
+04432A C9          0198*      ret
+04432B             0199*  
+04432B             0200*  exit_game:
+04432B C9          0201*      ret
+04432C             0202*  
+04432C             0054   
+04432C 57 65 6C 63 0055   hello_world: asciz "Welcome to Pac-Man!"
        6F 6D 65 20 
        74 6F 20 50 
        61 63 2D 4D 
        61 6E 21 00 
-044328 4C 6F 61 64 0056   loading_ui: asciz "Loading UI"
+044340 4C 6F 61 64 0056   loading_ui: asciz "Loading UI"
        69 6E 67 20 
        55 49 00    
-044333 50 72 65 73 0057   loading_complete: asciz "Press any key to continue."
+04434B 50 72 65 73 0057   loading_complete: asciz "Press any key to continue."
        73 20 61 6E 
        79 20 6B 65 
        79 20 74 6F 
        20 63 6F 6E 
        74 69 6E 75 
        65 2E 00    
-04434E             0058   
-04434E             0059   init:
-04434E             0060   ; clear all buffers
-04434E CD 7A 16 04 0061       call vdu_clear_all_buffers
-044352             0062   
-044352             0063   ; set up the display
-044352 3E 08       0064       ld a,8;+128 ; 136   320   240   64    60hz double-buffered
-044354 CD 64 15 04 0065       call vdu_set_screen_mode
-044358 AF          0066       xor a
-044359 CD 75 15 04 0067       call vdu_set_scaling
-04435D             0068   
-04435D             0069   ; ; enable additional audio channels
-04435D             0070   ; 	call vdu_enable_channels
-04435D             0071   
-04435D             0072   ; set text background color
-04435D 3E 9A       0073       ld a,26+128 ; violet
-04435F CD CC 14 04 0074       call vdu_colour_text
-044363             0075   
-044363             0076   ; set text foreground color
-044363 3E 2F       0077       ld a,47 ; aaaaff lavenderish
-044365 CD CC 14 04 0078       call vdu_colour_text
-044369             0079   
-044369             0080   ; set gfx bg color
-044369 AF          0081       xor a ; plotting mode 0
-04436A 3E 9A       0082       ld a,26+128 ; violet
-04436C CD DD 14 04 0083       call vdu_gcol
-044370 CD 9B 14 04 0084       call vdu_cls
-044374             0085   
-044374             0086   ; set the cursor off
-044374 CD 63 14 04 0087       call vdu_cursor_off
-044378             0088   
-044378             0089   ; ; VDU 28, left, bottom, right, top: Set text viewport **
-044378             0090   ; ; MIND THE LITTLE-ENDIANESS
-044378             0091   ; ; inputs: c=left,b=bottom,e=right,d=top
-044378             0092   ;     ld c,0 ; left
-044378             0093   ;     ld d,29 ; top
-044378             0094   ;     ld e,39 ; right
-044378             0095   ;     ld b,29; bottom
-044378             0096   ;     call vdu_set_txt_viewport
-044378             0097   
-044378             0098   ; ; print loading ui message
-044378             0099   ;     ld hl,loading_ui
-044378             0100   ;     call printString
-044378             0101   ;     call vdu_flip
-044378             0102   
-044378             0103   ; ; load UI images
-044378             0104   ;     call load_ui_images
-044378             0105   
-044378             0106   ; load sprites
-044378             0107       ; call img_load_init ; sets up the animated load screen
-044378 CD 6C 12 04 0108       call load_sprite_images
-04437C             0109   
-04437C             0110   ; ; load sound effects ; TODO
-04437C             0111   ; 	ld bc,SFX_num_buffers
-04437C             0112   ; 	ld hl,SFX_buffer_id_lut
-04437C             0113   ; 	ld (cur_buffer_id_lut),hl
-04437C             0114   ; 	ld hl,SFX_load_routines_table
-04437C             0115   ; 	ld (cur_load_jump_table),hl
-04437C             0116   ; 	call sfx_load_main
-04437C             0117   
-04437C             0118   ; print loading complete message and wait for user keypress
-04437C CD 9B 14 04 0119       call vdu_cls
-044380 21 33 43 04 0120       ld hl,loading_complete
-044384 CD 77 00 04 0121       call printString
-044388 CD A0 14 04 0122       call vdu_flip
-04438C CD 15 06 04 0123       call waitKeypress
-044390             0124   
-044390             0125   ; set up display for gameplay
-044390             0126       ; ld a,8
-044390 3E 14       0127       ld a,20
-044392 CD 64 15 04 0128       call vdu_set_screen_mode
-044396 AF          0129       xor a
-044397 CD 75 15 04 0130       call vdu_set_scaling
-04439B CD 63 14 04 0131       call vdu_cursor_off
-04439F             0132   ; ; load fonts
-04439F             0133   ; 	call fonts_load
-04439F             0134   ; ; select font
-04439F             0135   ;     ld hl,computer_pixel_7_8x16
-04439F             0136   ;     ld a,1 ; flags
-04439F             0137   ;     call vdu_font_select
-04439F             0138   ; ; plot bezel art
-04439F             0139   ;     ld hl,BUF_BEZEL_L
-04439F             0140   ;     call vdu_buff_select
-04439F             0141   ;     ld bc,0
-04439F             0142   ;     ld de,0
-04439F             0143   ;     call vdu_plot_bmp
-04439F             0144   ;     ld hl,BUF_BEZEL_R
-04439F             0145   ;     call vdu_buff_select
-04439F             0146   ;     ld bc,384
-04439F             0147   ;     ld de,0
-04439F             0148   ;     call vdu_plot_bmp
-04439F             0149   ; set gfx origin and viewport to playing field window
-04439F 01 80 00 00 0150       ld bc,origin_left
-0443A3 11 00 00 00 0151       ld de,origin_top
-0443A7 CD 20 15 04 0152       call vdu_set_gfx_origin
-0443AB 01 00 00 00 0153       ld bc,field_left
-0443AF 11 00 00 00 0154       ld de,field_top
-0443B3 DD 21 FF 00 0155       ld ix,field_right
+044366             0058   
+044366             0059   init:
+044366             0060   ; clear all buffers
+044366 CD 7A 16 04 0061       call vdu_clear_all_buffers
+04436A             0062   
+04436A             0063   ; set up the display
+04436A 3E 08       0064       ld a,8;+128 ; 136   320   240   64    60hz double-buffered
+04436C CD 64 15 04 0065       call vdu_set_screen_mode
+044370 AF          0066       xor a
+044371 CD 75 15 04 0067       call vdu_set_scaling
+044375             0068   
+044375             0069   ; ; enable additional audio channels
+044375             0070   ; 	call vdu_enable_channels
+044375             0071   
+044375             0072   ; set text background color
+044375 3E 9A       0073       ld a,26+128 ; violet
+044377 CD CC 14 04 0074       call vdu_colour_text
+04437B             0075   
+04437B             0076   ; set text foreground color
+04437B 3E 2F       0077       ld a,47 ; aaaaff lavenderish
+04437D CD CC 14 04 0078       call vdu_colour_text
+044381             0079   
+044381             0080   ; set gfx bg color
+044381 AF          0081       xor a ; plotting mode 0
+044382 3E 9A       0082       ld a,26+128 ; violet
+044384 CD DD 14 04 0083       call vdu_gcol
+044388 CD 9B 14 04 0084       call vdu_cls
+04438C             0085   
+04438C             0086   ; set the cursor off
+04438C CD 63 14 04 0087       call vdu_cursor_off
+044390             0088   
+044390             0089   ; ; VDU 28, left, bottom, right, top: Set text viewport **
+044390             0090   ; ; MIND THE LITTLE-ENDIANESS
+044390             0091   ; ; inputs: c=left,b=bottom,e=right,d=top
+044390             0092   ;     ld c,0 ; left
+044390             0093   ;     ld d,29 ; top
+044390             0094   ;     ld e,39 ; right
+044390             0095   ;     ld b,29; bottom
+044390             0096   ;     call vdu_set_txt_viewport
+044390             0097   
+044390             0098   ; ; print loading ui message
+044390             0099   ;     ld hl,loading_ui
+044390             0100   ;     call printString
+044390             0101   ;     call vdu_flip
+044390             0102   
+044390             0103   ; ; load UI images
+044390             0104   ;     call load_ui_images
+044390             0105   
+044390             0106   ; load sprites
+044390             0107       ; call img_load_init ; sets up the animated load screen
+044390 CD 6C 12 04 0108       call load_sprite_images
+044394             0109   
+044394             0110   ; ; load sound effects ; TODO
+044394             0111   ; 	ld bc,SFX_num_buffers
+044394             0112   ; 	ld hl,SFX_buffer_id_lut
+044394             0113   ; 	ld (cur_buffer_id_lut),hl
+044394             0114   ; 	ld hl,SFX_load_routines_table
+044394             0115   ; 	ld (cur_load_jump_table),hl
+044394             0116   ; 	call sfx_load_main
+044394             0117   
+044394             0118   ; print loading complete message and wait for user keypress
+044394 CD 9B 14 04 0119       call vdu_cls
+044398 21 4B 43 04 0120       ld hl,loading_complete
+04439C CD 77 00 04 0121       call printString
+0443A0 CD A0 14 04 0122       call vdu_flip
+0443A4 CD 15 06 04 0123       call waitKeypress
+0443A8             0124   
+0443A8             0125   ; set up display for gameplay
+0443A8             0126       ; ld a,8
+0443A8 3E 14       0127       ld a,20
+0443AA CD 64 15 04 0128       call vdu_set_screen_mode
+0443AE AF          0129       xor a
+0443AF CD 75 15 04 0130       call vdu_set_scaling
+0443B3 CD 63 14 04 0131       call vdu_cursor_off
+0443B7             0132   ; ; load fonts
+0443B7             0133   ; 	call fonts_load
+0443B7             0134   ; ; select font
+0443B7             0135   ;     ld hl,computer_pixel_7_8x16
+0443B7             0136   ;     ld a,1 ; flags
+0443B7             0137   ;     call vdu_font_select
+0443B7             0138   ; ; plot bezel art
+0443B7             0139   ;     ld hl,BUF_BEZEL_L
+0443B7             0140   ;     call vdu_buff_select
+0443B7             0141   ;     ld bc,0
+0443B7             0142   ;     ld de,0
+0443B7             0143   ;     call vdu_plot_bmp
+0443B7             0144   ;     ld hl,BUF_BEZEL_R
+0443B7             0145   ;     call vdu_buff_select
+0443B7             0146   ;     ld bc,384
+0443B7             0147   ;     ld de,0
+0443B7             0148   ;     call vdu_plot_bmp
+0443B7             0149   ; set gfx origin and viewport to playing field window
+0443B7 01 80 00 00 0150       ld bc,origin_left
+0443BB 11 00 00 00 0151       ld de,origin_top
+0443BF CD 20 15 04 0152       call vdu_set_gfx_origin
+0443C3 01 00 00 00 0153       ld bc,field_left
+0443C7 11 00 00 00 0154       ld de,field_top
+0443CB DD 21 FF 00 0155       ld ix,field_right
        00          
-0443B8 FD 21 7F 01 0156       ld iy,field_bottom
+0443D0 FD 21 7F 01 0156       ld iy,field_bottom
        00          
-0443BD CD 3B 15 04 0157       call vdu_set_gfx_viewport
-0443C1             0158   ; set background color
-0443C1 3E 9A       0159       ld a,26+128 ; violet
-0443C3 CD DD 14 04 0160       call vdu_gcol
-0443C7 CD AE 14 04 0161       call vdu_clg
-0443CB             0162   ; ; VDU 28, left, bottom, right, top: Set text viewport **
-0443CB             0163   ;     ld c,0 ; left
-0443CB             0164   ;     ld d,0 ; top
-0443CB             0165   ;     ld e,62 ; right
-0443CB             0166   ;     ld b,7; bottom
-0443CB             0167   ;     call vdu_set_txt_viewport
-0443CB             0168   
-0443CB             0169   ; initialize the global timestamp
-0443CB CD D7 13 04 0170       call timestamp_tick
-0443CF             0171   
-0443CF             0172   ; done with init
-0443CF C9          0173       ret
-0443D0             0174   
-0443D0             0175   main:
-0443D0             0176   ; start a new game
-0443D0 CD 3F 42 04 0177       call game_initialize
-0443D4             0178   
-0443D4             0179   main_loop:
-0443D4             0180   ; update the global timestamp
-0443D4 CD D7 13 04 0181       call timestamp_tick
-0443D8             0182   
-0443D8             0183   ; do gamestate logic
-0443D8 CD 2B 42 04 0184       call do_game
-0443DC             0185   
-0443DC             0186   ; wait for the next vblank mitigate flicker and for loop timing
-0443DC CD 0F 15 04 0187       call vdu_vblank
-0443E0             0188       ; call vdu_vblank ; DEBUG
-0443E0             0189       ; call vdu_vblank ; DEBUG
-0443E0             0190       ; call vdu_vblank ; DEBUG
-0443E0             0191   
-0443E0             0192   ; poll keyboard for escape keypress
-0443E0 3E 08       0193       ld a, $08 ; code to send to MOS
-0443E2 5B CF       0194       rst.lil $08 ; get IX pointer to System Variables
-0443E4             0195   
-0443E4 DD 7E 05    0196       ld a, (ix + $05) ; get ASCII code of key pressed
-0443E7 FE 1B       0197       cp 27 ; check if 27 (ascii code for ESC)
-0443E9 CA F1 43 04 0198       jp z, main_end ; if pressed, jump to exit
-0443ED             0199   
-0443ED C3 D4 43 04 0200       jp main_loop
-0443F1             0201   
-0443F1             0202   main_end:
-0443F1 CD 55 14 04 0203       call vdu_cursor_on
-0443F5 C9          0204       ret
+0443D5 CD 3B 15 04 0157       call vdu_set_gfx_viewport
+0443D9             0158   ; set background color
+0443D9 3E 9A       0159       ld a,26+128 ; violet
+0443DB CD DD 14 04 0160       call vdu_gcol
+0443DF CD AE 14 04 0161       call vdu_clg
+0443E3             0162   ; ; VDU 28, left, bottom, right, top: Set text viewport **
+0443E3             0163   ;     ld c,0 ; left
+0443E3             0164   ;     ld d,0 ; top
+0443E3             0165   ;     ld e,62 ; right
+0443E3             0166   ;     ld b,7; bottom
+0443E3             0167   ;     call vdu_set_txt_viewport
+0443E3             0168   
+0443E3             0169   ; initialize the global timestamp
+0443E3 CD D7 13 04 0170       call timestamp_tick
+0443E7             0171   
+0443E7             0172   ; done with init
+0443E7 C9          0173       ret
+0443E8             0174   
+0443E8             0175   main:
+0443E8             0176   ; start a new game
+0443E8 CD 57 42 04 0177       call game_initialize
+0443EC             0178   
+0443EC             0179   main_loop:
+0443EC             0180   ; update the global timestamp
+0443EC CD D7 13 04 0181       call timestamp_tick
+0443F0             0182   
+0443F0             0183   ; do gamestate logic
+0443F0 CD 43 42 04 0184       call do_game
+0443F4             0185   
+0443F4             0186   ; wait for the next vblank mitigate flicker and for loop timing
+0443F4 CD 0F 15 04 0187       call vdu_vblank
+0443F8             0188       ; call vdu_vblank ; DEBUG
+0443F8             0189       ; call vdu_vblank ; DEBUG
+0443F8             0190       ; call vdu_vblank ; DEBUG
+0443F8             0191   
+0443F8             0192   ; poll keyboard for escape keypress
+0443F8 3E 08       0193       ld a, $08 ; code to send to MOS
+0443FA 5B CF       0194       rst.lil $08 ; get IX pointer to System Variables
+0443FC             0195   
+0443FC DD 7E 05    0196       ld a, (ix + $05) ; get ASCII code of key pressed
+0443FF FE 1B       0197       cp 27 ; check if 27 (ascii code for ESC)
+044401 CA 09 44 04 0198       jp z, main_end ; if pressed, jump to exit
+044405             0199   
+044405 C3 EC 43 04 0200       jp main_loop
+044409             0201   
+044409             0202   main_end:
+044409 CD 55 14 04 0203       call vdu_cursor_on
+04440D C9          0204       ret
