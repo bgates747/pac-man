@@ -70,7 +70,7 @@ main:
     ; ld ix,maze_index
     ; ld bc,0x000324 ; 3.142
     ; ld de,0x0002B7 ; 2.718
-    ; call map_get_cell
+    ; call map_get_cell_from_xy
     ; call dumpRegistersHex
     ; call printNewLine
 

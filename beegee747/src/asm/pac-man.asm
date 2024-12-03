@@ -27,6 +27,7 @@ exit:
 
 ; API INCLUDES
     include "mos_api.inc"
+    include "macros.inc"
     include "functions.inc"
     include "arith24.inc"
     include "maths.inc"
@@ -51,6 +52,7 @@ exit:
     include "player.inc"
     include "sprites.inc"
     include "state.inc"
+    include "debug.inc"
 
 hello_world: asciz "Welcome to Pac-Man!"
 loading_ui: asciz "Loading UI"

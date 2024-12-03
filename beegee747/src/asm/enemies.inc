@@ -33,7 +33,7 @@ move_enemies:
     ld a,(iy+sprite_id) ; get spriteId
     call vdu_sprite_select ; select sprite 
     ld hl,(iy+sprite_move_program) ; load the behavior subroutine address
-    callHL
+    CALL_HL
 ; move_enemies_loop_return: return from behavior subroutines
     ld iy,(table_pointer) ; get back table pointer
 ; now we check results of all the moves
@@ -101,3 +101,7 @@ enemy_kill:
     set sprite_just_died,(iy+sprite_collisions)
     ret
 ; end enemy_kill
+
+; TODO: implement this
+scare_ghosts:
+    ret

@@ -1,13 +1,4 @@
-; test the sign of HL
-; inputs: HL obviously
-; outputs: sign flag set if HL is negative, zero flag set if HL is zero
-; destroys: flags    
-    MACRO sign_hlu
-    add hl,de
-    or a ; clear flags
-    sbc hl,de
-    ENDMACRO
-
+    align 256
 
 ;------------------------------------------------------------------------
 ; Scratch area for calculations
@@ -88,7 +79,7 @@ hlu_div16:
 hlu_sdiv256:
     xor a ; assume hl is positive
     ld (@buffer),hl
-    sign_hlu
+    SIGN_HLU
     jp p,@hl_pos
     dec a
 @hl_pos:
@@ -108,31 +99,6 @@ hlu_udiv256:
     ld hl,(@buffer+1)
     ret
 @buffer: ds 4
-
-    MACRO hlu_mul256
-    add hl,hl ; * 2
-    add hl,hl ; * 4
-    add hl,hl ; * 8
-    add hl,hl ; * 16 
-    add hl,hl ; * 32
-    add hl,hl ; * 64
-    add hl,hl ; * 128
-    add hl,hl ; * 256
-    ENDMACRO
-
-; compute the modulo of hlu by deu
-; outputs: hlu = hlu % deu
-; destroys: f, hl
-hlu_mod:
-    or a ; clear carry
-@loop:
-    sbc hl,de
-    jp c, @end 
-    jp @loop
-@end:
-    add hl,de 
-    ret
-
 
 add_bcd_arg1: db #00,#00,#00,#00
 add_bcd_arg2: db #00,#00,#00,#00

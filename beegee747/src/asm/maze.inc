@@ -118,12 +118,32 @@ map_to_screen:
     pop bc ; bc = x-coordinate
     ret
 
+; TODO: not tested yet, and shouldn't be needed anyway but we leave it for academic interest
+; like map_to_screen but returns the exact tile coordinates from a cell index value
+; inputs: ix = pointer to map definition, hl = cell index
+; outputs: bc,de = x,y as 24-bit integers
+; destroys: a, hl, bc, de
+cell_to_screen:
+; compute row = int(idx / cols), col = idx % cols
+    ld de,0 ; clear deu and d
+    ld e,(ix+maze_cols)
+    call udiv24 ; de = row, hl = col TODO: a udiv24x8 would be a nice thingy for this
+    ld c,l ; c = col
+; compute y = row * tile_size
+    ld d,(ix+maze_tile_size)
+    ld b,d ; we'll use for x in a sec
+    mlt de ; de = y
+; compute x = col * tile_size
+    mlt bc ; bc = x
+    ret
+; end cell_to_screen
+
 ; get a pointer to a map cell from col and row input
 ; by computing cell index = row * cols + col
 ; inputs: ix = pointer to map definition, ub.c = col, ud.e = row in 16.8 fixed point format
 ; returns: ix = pointer to cell data, hl = cell index, a = cell value
 ; destroys: a, hl, ix
-map_get_cell:
+map_get_cell_from_xy:
     ld l,d ; int(row)
     ld h,(ix+maze_cols)
     mlt hl ; row * cols
@@ -139,10 +159,23 @@ map_get_cell:
     ld a,(ix) ; cell value
     ex de,hl ; restore de, hl = cell index
     ret
-; end map_get_cell
+; end map_get_cell_from_xy
 
-; snap row and or col values to the nearest integer
-; based on the path mask of the current cell
+; get a pointer to a map cell from cell index input
+; inputs: ix = pointer to map definition, hl = cell index
+; returns: ix = pointer to cell data, a = cell value
+; destroys: a, ix
+map_get_cell_from_idx:
+    push de ; preserve
+    ex de,hl ; can't add ix,hl
+    lea ix,ix+maze_base_bufferId+3 ; point to cell 0
+    add ix,de ; point to cell data
+    ld a,(ix) ; cell value
+    ex de,hl ; put index back into hl
+    pop de ; restore de
+    ret
+
+; snap row and or col values to the nearest half as required by the path mask of the current cell
 ; inputs: ix = pointer to map cell, ub.c = col, ud.e = row in 16.8 fixed point format
 ; outputs: ub.c = col, ud.e = row adjusted as required
 snap_to_path:

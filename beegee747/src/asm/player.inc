@@ -54,7 +54,7 @@ player_init:
     ld (iy+sprite_x),bc
     ld (iy+sprite_y),de
     ld ix,maze_path
-    call map_get_cell
+    call map_get_cell_from_xy
     ld (iy+sprite_current_cell),hl
     ld ix,maze_path
     call map_to_screen
@@ -196,15 +196,68 @@ player_not_dead: ; yay we didn't die
     ld (iy+sprite_y),de
 ; update current cell pointer with new position
     ld ix,maze_path
-    call map_get_cell
+    call map_get_cell_from_xy
     ld (iy+sprite_current_cell),hl
 ; convert new position to screen coordinates and draw sprite
     ld ix,maze_path
     call map_to_screen
 	call vdu_sprite_move_abs168
-; done
-    ret
+; did we eat a pellet?
+    ld ix,maze_pellets
+    ld hl,(iy+sprite_current_cell)
+    call map_get_cell_from_idx
+    and a ; if zero cell was empty
+    ret z ; ... so we're done
+; what kind of pellet did we eat?
+    cp 2 ; big pellet
+    jp z,big_pellet ; will return to caller from there
+    ; fall through to small_pellet
 ; end player_input
+
+; process actions for eating a small pellet
+; inputs: iy = player sprite record, ix = pointer to pellet cell, hl = cell index
+; outputs: player_score incremented, pellet cell set to zero, pellet bitmap erased, eventually sound played
+; destroys: everything except maybe iy
+small_pellet:
+    ld de,10 ; TODO: should be a constant
+_pellet:
+    ld hl,(player_score)
+    add hl,de
+    ld (player_score),hl
+    dec (ix) ; cell to zero = no pellet
+    ld hl,BUF_MAZE_PELLETS_00 ; blank pellet bitmap
+    ; ld hl,BUF_FRUIT_0 ; DEBUG
+    call vdu_buff_select
+    ld ix,maze_pellets
+    ld bc,(iy+sprite_x)
+    ld de,(iy+sprite_y)
+; TODO: make this a function
+    ld a,0x80 ; 0.5 map units in 16.8 fixed point format
+    ld c,a ; snap to ...
+    ld e,a ; cell centers
+    call map_to_screen
+    ld hl,4*256 ; offset to center the bitmap
+    add hl,bc
+    push hl
+    pop bc
+    ld hl,4*256 ; offset to center the bitmap
+    add hl,de
+    ex de,hl
+    call vdu_plot_bmp168
+; END TODO
+    ret
+; end small_pellet
+
+; process actions for eating a big pellet
+; inputs: iy = player sprite record, ix = pointer to pellet cell, ub.c, ud.e = player's position
+; outputs: player_score incremented, pellet cell set to zero, pellet bitmap erased, eventually sound played
+;          enemies set to scared state
+; destroys: everything except maybe iy, and hopefully lots of ghosts
+big_pellet:
+    call scare_ghosts ; TODO: implement this
+    ld de,50 ; TODO: should be a constant
+    jp _pellet ; do the rest of the pellet processing
+; end big_pellet
 
 ; inputs: a = orientation, uh.l = speed in 16.8 fixed format
 ; outputs: ub.c and ud.e are vel_x and vel_y in 16.8 fixed format

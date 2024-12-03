@@ -121,5 +121,5 @@ if __name__ == '__main__':
     palette_conv_type =     'RGB'  # Can be 'RGB' or 'HSV'
     transparent_rgb =       (0, 0, 0, 0)
     del_non_png =           False
-    do_palette =            True   # Enable palette conversion
+    do_palette =            False   
     make_images(buffer_id, images_type, asm_images_filepath, originals_dir, originals_subdirs, output_dir_png, output_dir_rgba, palette_name, palette_dir, palette_conv_type, transparent_rgb, del_non_png, do_palette)
