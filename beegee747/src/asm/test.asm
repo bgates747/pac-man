@@ -56,13 +56,23 @@ init:
     ret
 
 main:
+    xor a
+    set orient_up, a
+    set orient_down,a
+    push af
+    call printBin8
+    pop af
+    and 12
+    call printBin8
     call printNewLine
-    ld ix,maze_index
-    ld bc,0x000324 ; 3.142
-    ld de,0x0002B7 ; 2.718
-    call map_get_cell
-    call dumpRegistersHex
-    call printNewLine
+
+    ; call printNewLine
+    ; ld ix,maze_index
+    ; ld bc,0x000324 ; 3.142
+    ; ld de,0x0002B7 ; 2.718
+    ; call map_get_cell
+    ; call dumpRegistersHex
+    ; call printNewLine
 
     ; call printNewLine
     ; ld ix,maze_index

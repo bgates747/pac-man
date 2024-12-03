@@ -86,14 +86,14 @@ init:
 ; set the cursor off
     call vdu_cursor_off
 
-; ; VDU 28, left, bottom, right, top: Set text viewport **
-; ; MIND THE LITTLE-ENDIANESS
-; ; inputs: c=left,b=bottom,e=right,d=top
-;     ld c,0 ; left
-;     ld d,29 ; top
-;     ld e,39 ; right
-;     ld b,29; bottom
-;     call vdu_set_txt_viewport
+; VDU 28, left, bottom, right, top: Set text viewport **
+; MIND THE LITTLE-ENDIANESS
+; inputs: c=left,b=bottom,e=right,d=top
+    ld c,0 ; left
+    ld d,29 ; top
+    ld e,39 ; right
+    ld b,29; bottom
+    call vdu_set_txt_viewport
 
 ; ; print loading ui message
 ;     ld hl,loading_ui

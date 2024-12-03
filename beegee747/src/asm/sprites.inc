@@ -1,5 +1,5 @@
 ; ###### SPRITE TABLE FIELD INDICES ######
-table_bytes_per_record: equ 38 ; 38 bytes per sprite record
+table_bytes_per_record: equ 41 ; 41 bytes per sprite record
 sprite_id:              equ 00 ; 1 bytes unique spriteId, zero-based
 sprite_type:            equ 01 ; 1 bytes type of sprite as defined in enemies.inc
 sprite_base_bufferId:   equ 02 ; 3 bytes bitmap bufferId
@@ -20,6 +20,7 @@ sprite_move_timer:      equ 34 ; 1 bytes when zero, go to next move program, or 
 sprite_move_step:       equ 35 ; 1 bytes stage in a move program sequence, varies
 sprite_points:          equ 36 ; 1 bytes points awarded for killing this sprite type
 sprite_shield_damage:   equ 37 ; 1 bytes shield points deducted for collision
+sprite_current_cell:    equ 38 ; 3 bytes current cell index
 
 ; ###### SPRITE TABLE VARIABLES ######
 ; maximum number of sprites

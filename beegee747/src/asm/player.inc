@@ -26,19 +26,16 @@ player_move_timer:       db     0x00 ; 1 bytes not currently used
 player_move_step:        db     0x00 ; 1 bytes not currently used
 player_points:           db     0x00 ; 1 bytes not currently used
 player_shield_damage:    db     0x00 ; 1 bytes not currently used
+player_current_cell:     dl 0x000000 ; 3 bytes current cell index
 player_end_variables: ; for when we want to traverse this table in reverse
-
-orient_up: equ 2
-orient_left: equ 1
-orient_down: equ 3
-orient_right: equ 0
 
 ; set initial player position
 ; inputs: none,everything is hardcoded
 ; outputs: player_x/y set to bottom-left corner of screen
 ; destroys: a
 player_init:
-	ld a,(player_id)
+    ld iy,player_start_variables
+	ld a,(iy+sprite_id)
 	call vdu_sprite_select
     call vdu_sprite_clear_frames
     ld hl,BUF_PAC_MAN_00_00
@@ -54,6 +51,11 @@ player_init:
 ; initialize player position
     ld bc,0x000D00 ; 13
     ld de,0x001700 ; 23
+    ld (iy+sprite_x),bc
+    ld (iy+sprite_y),de
+    ld ix,maze_path
+    call map_get_cell
+    ld (iy+sprite_current_cell),hl
     ld ix,maze_path
     call map_to_screen
     call vdu_sprite_move_abs168
@@ -172,13 +174,31 @@ player_not_dead: ; yay we didn't die
 ; set player velocities based on orientation
     ld a,(iy+sprite_orientation)
     ld hl,speed_player
-    call velocity_from_orientation
-    ld (iy+sprite_xvel),bc
-    ld (iy+sprite_yvel),de
-; draw player at updated position
-    call move_sprite
-    ld bc,(iy+sprite_x)
-    ld de,(iy+sprite_y)
+    call velocity_from_orientation ; ub.c and ud.e are vel_x and vel_y in 16.8 fixed format
+; compute preliminary new position based on velocities
+; x-axis movement
+    ld hl,(iy+sprite_x)
+    add hl,bc
+    push hl
+    pop bc ; ub.c = preliminary x position
+; y-axis movement
+    ld hl,(iy+sprite_y)
+    add hl,de ; uh.l = preliminary y position
+; short diversion to get the path mask at the player's current position
+    ld de,(iy+sprite_current_cell)
+    ld ix,maze_path_map
+    add ix,de ; ix points to the current cell's path mask
+; now back to the y axis value
+    ex de,hl ; ud.e = preliminary x position
+    call snap_to_path
+; save modified results back to sprite record
+    ld (iy+sprite_x),bc
+    ld (iy+sprite_y),de
+; update current cell pointer with new position
+    ld ix,maze_path
+    call map_get_cell
+    ld (iy+sprite_current_cell),hl
+; convert new position to screen coordinates and draw sprite
     ld ix,maze_path
     call map_to_screen
 	call vdu_sprite_move_abs168

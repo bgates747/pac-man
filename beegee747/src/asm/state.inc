@@ -2,8 +2,8 @@ cur_level: db 0
 
 init_level:
 ; offset gfx origin to account for sprite size
-    ld bc,origin_left
-    ld de,origin_top+5 ; TODO: this is a weird value, is it legit?
+    ld bc,origin_left+8
+    ld de,origin_top+8
     call vdu_set_gfx_origin
 ; draw maze and pellets
     ld ix,maze_walls

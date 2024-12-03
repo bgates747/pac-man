@@ -5,6 +5,10 @@ maze_null_tile: equ 9
 maze_x: equ 12
 maze_y: equ 15
 maze_base_bufferId: equ 18
+orient_up: equ 2
+orient_left: equ 1
+orient_down: equ 3
+orient_right: equ 0
 
 ; draw a maze based on a maze definition table
 ; inputs: ix = pointer to maze definition table
@@ -136,3 +140,40 @@ map_get_cell:
     ex de,hl ; restore de, hl = cell index
     ret
 ; end map_get_cell
+
+; snap row and or col values to the nearest integer
+; based on the path mask of the current cell
+; inputs: ix = pointer to map cell, ub.c = col, ud.e = row in 16.8 fixed point format
+; outputs: ub.c = col, ud.e = row adjusted as required
+snap_to_path:
+    ld a,0x80
+    bit orient_up,(ix)
+    call z,@up
+    bit orient_left,(ix)
+    call z,@left
+    bit orient_down,(ix)
+    call z,@down
+    bit orient_right,(ix)
+    call z,@right
+    ret ; all the directions checked, so we're done
+@up:
+    cp e ; fractional portion
+    ret c ; no adjustment needed
+    ld e,a ; snap fractional portion to 1/2
+    ret ; up done
+@left:
+    cp c ; fractional portion
+    ret c ; no adjustment needed
+    ld c,a ; snap fractional portion to 1/2
+    ret ; left done
+@down:
+    cp e ; fractional portion
+    ret nc ; no adjustment needed
+    ld e,a ; snap fractional portion to 1/2
+    ret ; down done
+@right:
+    cp c ; fractional portion
+    ret nc ; no adjustment needed
+    ld c,a ; snap fractional portion to 1/2
+    ret ; right done
+; end snap_to_path

@@ -22,9 +22,7 @@ def get_direction_mask(maze, x, y, wrap_horiz, wrap_vert):
             nx %= num_cols
         if wrap_vert:
             ny %= num_rows
-        if 0 <= nx < num_cols and 0 <= ny < num_rows:
-            return maze[ny][nx]
-        return 0
+        return maze[ny][nx] if 0 <= nx < num_cols and 0 <= ny < num_rows else 0
     
     # Only calculate the mask if the current cell is 01
     if maze[y][x] == 0:
