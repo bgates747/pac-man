@@ -1,0 +1,6 @@
+; Pac-Man Life
+
+SPRITE_PAC_MAN_LIFE_ID:         equ 14
+SPRITE_PAC_MAN_LIFE_HEIGHT: 	equ 16
+SPRITE_PAC_MAN_LIFE_WIDTH: 	    equ 16
+SPRITE_PAC_MAN_LIFE_0:          equ 317

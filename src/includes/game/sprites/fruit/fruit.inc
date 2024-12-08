@@ -1,0 +1,4 @@
+; Fruit
+
+SPRITE_FRUIT_HEIGHT: 	equ 16
+SPRITE_FRUIT_WIDTH: 	equ 16
