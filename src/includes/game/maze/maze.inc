@@ -17,22 +17,3 @@ draw_maze:
     ld de, 100
     call vdu_bitmap_plot
     ret
-
-vdu_refresh:
-    ld hl,@cmd         
-    ld bc,@end-@cmd    
-    rst.lil $18         
-    ret
-@cmd:  db 23,27,15
-@end:  db 0x00
-
-vdu_vblank:        
-    push ix            
-    ld a, $08
-	rst.lil $08
-    ld a, (ix + $00 + 0)
-@wait:        
-    cp a, (ix + $00 + 0)
-    jr z, @wait
-    pop ix
-    ret
