@@ -36,6 +36,7 @@
     include "src/includes/game/images_sprites.inc"
     include "src/includes/game/timer.inc"
     include "src/includes/game/maze/maze.inc"
+    include "src/includes/game/maze/maze_wall_map.inc"
 
 ; Character Sprites
     include "src/includes/game/sprites/pac_man/pac_man.inc"
@@ -94,13 +95,21 @@ start:
     ld bc, up2_txt_end - up2_txt
     rst.lil $18
 
+    ld bc,origin_left+8
+    ld de,origin_top+8
+    call vdu_set_gfx_origin
 
+    ld ix,maze_wall
+    ld hl,SPRITE_MAZE_TILE_00
     call draw_maze
+
+    ld bc,origin_left
+    ld de,origin_top
+    call vdu_set_gfx_origin
 
     call vdu_vblank
 
     call vdu_refresh
-
 
     call game_timer_tick
 
