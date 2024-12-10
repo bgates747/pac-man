@@ -2,7 +2,7 @@
 # Makefile Options
 # ----------------------------
 
-NAME			   = main
+NAME			   = pac-man
 EZ80ASM            = ez80asm
 EZ80ASM_FLAGS      = -x
 RM                 = rm -f
