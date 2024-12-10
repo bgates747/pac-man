@@ -30,8 +30,8 @@ orient_left: equ 1
 orient_down: equ 3
 orient_right: equ 0
 
-origin_top: equ 0 ; DEBUG
-origin_left: equ 128
+origin_top: equ 60 ;
+origin_left: equ 138
 
 ; draw a maze based on a maze definition table
 ; inputs: ix = pointer to maze definition table

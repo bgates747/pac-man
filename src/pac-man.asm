@@ -31,12 +31,13 @@
     include "src/includes/api/macro_text.inc"
     include "src/includes/api/macro_bitmap.inc"
 
-; Application includes
+; Game includes
     include "src/includes/game/vdu_data.inc"
     include "src/includes/game/images_sprites.inc"
     include "src/includes/game/timer.inc"
     include "src/includes/game/maze/maze.inc"
     include "src/includes/game/maze/maze_wall_map.inc"
+    include "src/includes/game/maze/maze_pellet_map.inc"
 
 ; Character Sprites
     include "src/includes/game/sprites/pac_man/pac_man.inc"
@@ -59,6 +60,11 @@
 ; Maze Bitmaps
     include "src/includes/game/sprites/maze/maze_tile.inc"
 
+; Pellet Bitmaps
+    include "src/includes/game/sprites/pellet/null_pellet.inc"
+    include "src/includes/game/sprites/pellet/pellet.inc"
+    include "src/includes/game/sprites/pellet/power_pellet.inc"
+
 start:
     push af
     push bc
@@ -71,7 +77,7 @@ start:
     ld a, VDU_SCREENMODE_512x384x64_60HZ
     call vdu_screen_set_mode
 
-    ld a, VDU_SCALING_ON
+    ld a, VDU_SCALING_OFF
     call vdu_screen_set_scaling
 
     call vdu_cursor_off
@@ -101,6 +107,9 @@ start:
 
     ld ix,maze_wall
     ld hl,SPRITE_MAZE_TILE_00
+    call draw_maze
+    ld ix,maze_pellets
+    ld hl,SPRITE_NULL_PELLET_00
     call draw_maze
 
     ld bc,origin_left

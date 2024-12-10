@@ -331,4 +331,9 @@ vdu_data:
     macro_bitmap_make_buffered SPRITE_MAZE_TILE_33, SPRITE_MAZE_TILE_WIDTH, SPRITE_MAZE_TILE_HEIGHT, "src/assets/maze/tile_33.rgba2"
     macro_bitmap_make_buffered SPRITE_MAZE_TILE_34, SPRITE_MAZE_TILE_WIDTH, SPRITE_MAZE_TILE_HEIGHT, "src/assets/maze/tile_34.rgba2"
 
+    ; Pellets
+    macro_bitmap_make_buffered SPRITE_NULL_PELLET_00, SPRITE_PELLET_TILE_WIDTH, SPRITE_PELLET_TILE_HEIGHT, "src/assets/pellet/null_pellet_00.rgba2"
+    macro_bitmap_make_buffered SPRITE_PELLET_00, SPRITE_PELLET_TILE_WIDTH, SPRITE_PELLET_TILE_HEIGHT, "src/assets/pellet/pellet_00.rgba2"
+    macro_bitmap_make_buffered SPRITE_POWER_PELLET_00, SPRITE_PELLET_TILE_WIDTH, SPRITE_PELLET_TILE_HEIGHT, "src/assets/pellet/power_pellet_00.rgba2"
+
 vdu_data_end:
