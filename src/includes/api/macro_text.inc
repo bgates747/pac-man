@@ -12,3 +12,11 @@
         ld a,0
         rst.lil VDU_OUTPUT_STREAM_TO_VDP
 	ENDMACRO
+
+    ; Set the text color
+    MACRO macro_text_set_color color
+    	ld a, 17
+    	rst.lil $10
+	    ld a, color
+	    rst.lil $10
+    ENDMACRO

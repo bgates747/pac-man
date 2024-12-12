@@ -27,6 +27,7 @@
     include "src/includes/api/vdu_bitmap.inc"
     include "src/includes/api/vdu_text.inc"
     include "src/includes/api/sprite.inc"
+    include "src/includes/api/vdu_sprite.inc"
     include "src/includes/api/macro_sprite.inc"
     include "src/includes/api/macro_text.inc"
     include "src/includes/api/macro_bitmap.inc"
@@ -61,9 +62,11 @@
     include "src/includes/game/sprites/maze/maze_tile.inc"
 
 ; Pellet Bitmaps
-    include "src/includes/game/sprites/pellet/null_pellet.inc"
     include "src/includes/game/sprites/pellet/pellet.inc"
     include "src/includes/game/sprites/pellet/power_pellet.inc"
+    include "src/includes/game/sprites/pellet/null_pellet.inc"
+
+animation_counter:   db 10
 
 start:
     push af
@@ -74,7 +77,7 @@ start:
 
     call vdu_buffer_clear_all
 
-    ld a, VDU_SCREENMODE_512x384x64_60HZ
+    ld a, VDU_MODE_512x384x64_60HZ
     call vdu_screen_set_mode
 
     ld a, VDU_SCALING_OFF
@@ -101,6 +104,13 @@ start:
     ld bc, up2_txt_end - up2_txt
     rst.lil $18
 
+    macro_text_set_color 11
+
+    ; Print the ready text
+    ld hl, ready_txt
+    ld bc, ready_txt_end - ready_txt
+    rst.lil $18
+
     ld bc,origin_left+8
     ld de,origin_top+8
     call vdu_set_gfx_origin
@@ -121,10 +131,70 @@ start:
     call vdu_refresh
 
     call game_timer_tick
+    
+    ld a, 6
+    call vdu_sprite_select
+    call vdu_sprite_show
+
+    ld a, 0
+    call vdu_sprite_select
+    ld a, 11
+    call vdu_sprite_select_frame
+    call vdu_sprite_show
+
+    ld a, 1
+    call vdu_sprite_select
+    call vdu_sprite_show
+
+    ld a, 2
+    call vdu_sprite_select
+    call vdu_sprite_next_frame
+    call vdu_sprite_show
+
+    ld a, 3
+    call vdu_sprite_select
+    call vdu_sprite_next_frame
+    call vdu_sprite_next_frame
+    call vdu_sprite_show
+
+    ld a, 4
+    call vdu_sprite_select
+    call vdu_sprite_next_frame
+    call vdu_sprite_next_frame
+    call vdu_sprite_next_frame
+    call vdu_sprite_show
 
 game_loop:
+  
 
     call game_timer_tick
+    
+    ld hl, animation_counter
+    dec (hl)
+    jr nz, skip_animation 
+
+    ld a, 1
+    call vdu_sprite_select
+    call vdu_sprite_next_frame
+
+    ld a, 2
+    call vdu_sprite_select
+    call vdu_sprite_next_frame
+
+    ld a, 3
+    call vdu_sprite_select
+    call vdu_sprite_next_frame
+
+    ld a, 4
+    call vdu_sprite_select
+    call vdu_sprite_next_frame
+
+    ld a, 10 ;
+    ld hl, animation_counter
+    ld (hl), a 
+
+skip_animation:
+ 
 
     ld a, mos_getkbmap
 	rst.lil $08
@@ -134,11 +204,36 @@ game_loop:
     bit 0, a
     jp nz, quit
 
+; If the A key is pressed
+    ld a, (ix + $08)    
+    bit 1, a
+    call nz, a_pressed
+
+
+    ; If the D key is pressed
+    ld a, (ix + $06)    
+    bit 2, a
+    call nz, d_pressed
+
+    ; If the W key is pressed
+    ld a, (ix + $04)
+    bit 1, a
+    call nz, w_pressed
+
+    ; If the S key is pressed
+    ld a, (ix + $0A)
+    bit 1, a
+    call nz, s_pressed
+
+    call vdu_vblank
+
+    call vdu_refresh
+
     jp game_loop
 
 quit:
 
-    ld hl, VDU_SCREENMODE_640x480x4_60HZ
+    ld hl, VDU_MODE_640x480x4_60HZ
     call vdu_screen_set_mode
 
     call vdu_cursor_flash
@@ -172,3 +267,90 @@ up2_txt:
     .db     31, 41, 3
     .db     "2UP"
 up2_txt_end:
+
+ready_txt:
+    .db     31, 30, 26
+    .db     "READY!"
+ready_txt_end:
+
+pac_man:     EQU     0
+sprite:     EQU     0
+sprite_x:
+     .dw 250
+sprite_y:
+     .dw 248
+
+d_pressed:
+    ld a, pac_man
+    call vdu_sprite_select
+    ld a, 0
+    call vdu_sprite_select_frame
+    
+    ld hl, sprite_x    ; Load the address of sprite_x into hl
+    ld a, (hl)        ; Load the low byte of sprite_x into a
+    inc a             ; Increment the low byte
+    ld (hl), a        ; Store the updated low byte
+    inc hl             ; Move to the high byte of sprite_x
+    ld a, (hl)        ; Load the high byte into a
+    adc a, 0          ; Add 0 (with carry from previous inc)
+    ld (hl), a        ; Store the updated high byte
+
+    ; Load sprite_x into bc
+    ld hl, sprite_x    ; Load the address of sprite_x again
+    ld c, (hl)        ; Load the low byte into c
+    inc hl             ; Move to the high byte
+    ld b, (hl)        ; Load the high byte into b
+
+    ld de,0
+    ld de, (sprite_y)
+
+    call vdu_sprite_move_abs
+    ret
+
+a_pressed:
+    ld a, pac_man
+    call vdu_sprite_select
+    ld a, 3
+    call vdu_sprite_select_frame
+    ld a, (sprite_x)
+    dec a
+    ld (sprite_x), a
+    ld bc,0
+    ld c,a
+    ld de,0
+    ld a, (sprite_y)
+    ld e, a
+    call vdu_sprite_move_abs
+    ret
+
+w_pressed:
+    ld a, pac_man
+    call vdu_sprite_select
+    ld a, 7
+    call vdu_sprite_select_frame
+    ld a, (sprite_x)
+    ld bc,0
+    ld c,a
+    ld de,0
+    ld a, (sprite_y)
+    dec a
+    ld (sprite_y), a
+    ld e, a
+    call vdu_sprite_move_abs
+    ret
+
+s_pressed:
+    ld a, pac_man
+    call vdu_sprite_select
+    ld a, 10
+    call vdu_sprite_select_frame
+    ld a, (sprite_x)
+    ld bc,0
+    ld c,a
+    ld de,0
+    ld a, (sprite_y)
+    inc a
+    ld (sprite_y), a
+    ld e, a
+    call vdu_sprite_move_abs
+    ret

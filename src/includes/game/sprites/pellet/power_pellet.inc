@@ -1,0 +1,1 @@
+SPRITE_POWER_PELLET_00:         equ 442

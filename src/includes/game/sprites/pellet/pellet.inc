@@ -1,0 +1,4 @@
+SPRITE_PELLET_TILE_HEIGHT: 	    equ 8
+SPRITE_PELLET_TILE_WIDTH: 	    equ 8
+
+SPRITE_PELLET_00:               equ 441

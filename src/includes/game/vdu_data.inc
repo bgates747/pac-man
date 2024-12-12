@@ -32,9 +32,8 @@ vdu_data:
     macro_sprite_add_frame SPRITE_PAC_MAN_03_02
 
     macro_sprite_activate 1
-    macro_sprite_show_current
 
-    macro_sprite_move SPRITE_PAC_MAN_ID, 210,90
+    macro_sprite_move SPRITE_PAC_MAN_ID, 250,248
 
     ; Blinky
 
@@ -60,9 +59,8 @@ vdu_data:
     macro_sprite_add_frame SPRITE_BLINKY_7
 
     macro_sprite_activate 2
-    macro_sprite_show_current
 
-    macro_sprite_move SPRITE_BLINKY_ID, 232,90
+    macro_sprite_move SPRITE_BLINKY_ID, 250,152
 
     ; Pinky
 
@@ -88,9 +86,8 @@ vdu_data:
     macro_sprite_add_frame SPRITE_PINKY_7
 
     macro_sprite_activate 3
-    macro_sprite_show_current
 
-    macro_sprite_move SPRITE_PINKY_ID, 248,90
+    macro_sprite_move SPRITE_PINKY_ID, 250,175
 
     ; Inky
 
@@ -116,9 +113,8 @@ vdu_data:
     macro_sprite_add_frame SPRITE_INKY_7
 
     macro_sprite_activate 4
-    macro_sprite_show_current
 
-    macro_sprite_move SPRITE_INKY_ID, 264,90
+    macro_sprite_move SPRITE_INKY_ID, 234,175
 
     ; Clyde
 
@@ -144,9 +140,8 @@ vdu_data:
     macro_sprite_add_frame SPRITE_CLYDE_7
 
     macro_sprite_activate 5
-    macro_sprite_show_current
 
-    macro_sprite_move SPRITE_CLYDE_ID, 280,90
+    macro_sprite_move SPRITE_CLYDE_ID, 266,175
 
     ; Reverse
 
@@ -172,7 +167,6 @@ vdu_data:
     macro_sprite_add_frame SPRITE_REVERSE_7
 
     macro_sprite_activate 6
-    macro_sprite_show_current
 
     macro_sprite_move SPRITE_REVERSE_ID, 296,90
 
@@ -186,9 +180,8 @@ vdu_data:
     macro_sprite_add_frame SPRITE_CHERRY_0
 
     macro_sprite_activate 7
-    macro_sprite_show_current
 
-    macro_sprite_move SPRITE_CHERRY_0_ID, 210,150
+    macro_sprite_move SPRITE_CHERRY_0_ID, 338,320
 
     ; Cherry
     macro_bitmap_make_buffered SPRITE_BERRY_0, SPRITE_FRUIT_WIDTH, SPRITE_FRUIT_HEIGHT, "src/assets/fruit/berry_0.rgba2" 
@@ -199,7 +192,6 @@ vdu_data:
     macro_sprite_add_frame SPRITE_BERRY_0
 
     macro_sprite_activate 8
-    macro_sprite_show_current
 
     macro_sprite_move SPRITE_BERRY_0_ID, 226,150
 
@@ -212,7 +204,6 @@ vdu_data:
     macro_sprite_add_frame SPRITE_ORANGE_0
 
     macro_sprite_activate 9
-    macro_sprite_show_current
 
     macro_sprite_move SPRITE_ORANGE_0_ID, 242,150
 
@@ -225,7 +216,6 @@ vdu_data:
     macro_sprite_add_frame SPRITE_APPLE_0
 
     macro_sprite_activate 10
-    macro_sprite_show_current
 
     macro_sprite_move SPRITE_APPLE_0_ID, 258,150
 
@@ -238,7 +228,6 @@ vdu_data:
     macro_sprite_add_frame SPRITE_MELON_0
 
     macro_sprite_activate 11
-    macro_sprite_show_current
 
     macro_sprite_move SPRITE_MELON_0_ID, 274,150
 
@@ -251,7 +240,6 @@ vdu_data:
     macro_sprite_add_frame SPRITE_GALAXIAN_0
 
     macro_sprite_activate 12
-    macro_sprite_show_current
 
     macro_sprite_move SPRITE_GALAXIAN_0_ID, 290,150
 
@@ -264,7 +252,6 @@ vdu_data:
     macro_sprite_add_frame SPRITE_BELL_0
 
     macro_sprite_activate 13
-    macro_sprite_show_current
 
     macro_sprite_move SPRITE_BELL_0_ID, 306,150
 
@@ -277,7 +264,6 @@ vdu_data:
     macro_sprite_add_frame SPRITE_KEY_0
 
     macro_sprite_activate 14
-    macro_sprite_show_current
 
     macro_sprite_move SPRITE_KEY_0_ID, 318,150
 
@@ -290,7 +276,6 @@ vdu_data:
     macro_sprite_add_frame SPRITE_PAC_MAN_LIFE_0
 
     macro_sprite_activate 15
-    macro_sprite_show_current
 
     macro_sprite_move SPRITE_PAC_MAN_LIFE_ID, 334,150
 

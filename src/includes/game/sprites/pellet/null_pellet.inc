@@ -1,8 +1,1 @@
-SPRITE_PELLET_TILE_HEIGHT: 	    equ 8
-SPRITE_PELLET_TILE_WIDTH: 	    equ 8
-
 SPRITE_NULL_PELLET_00:          equ 440
-
-SPRITE_PELLET_00:               equ 441
-
-SPRITE_POWER_PELLET_00:         equ 442
