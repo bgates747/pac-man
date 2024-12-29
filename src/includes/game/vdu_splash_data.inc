@@ -1,0 +1,16 @@
+BITRIOTDEV_FULL_LOGO_ID:         EQU 1
+BITRIOTDEV_FULL_LOGO_WIDTH:      EQU 260
+BITRIOTDEV_FULL_LOGO_HEIGHT:     EQU 20
+
+BITRIOTDEV_SMALL_LOGO_ID:         EQU 2
+BITRIOTDEV_SMALL_LOGO_WIDTH:      EQU 130
+BITRIOTDEV_SMALL_LOGO_HEIGHT:     EQU 10
+
+
+
+vdu_logo_data:
+
+    macro_bitmap_make_buffered BITRIOTDEV_FULL_LOGO_ID, BITRIOTDEV_FULL_LOGO_WIDTH, BITRIOTDEV_FULL_LOGO_HEIGHT, "src/assets/splash/full_bitriotdev.rgba2"
+    macro_bitmap_make_buffered BITRIOTDEV_SMALL_LOGO_ID, BITRIOTDEV_SMALL_LOGO_WIDTH, BITRIOTDEV_SMALL_LOGO_HEIGHT, "src/assets/splash/small_bitriotdev.rgba2"
+
+vdu_logo_data_end:

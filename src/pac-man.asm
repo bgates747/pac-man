@@ -25,7 +25,9 @@
     include "src/includes/api/vdu_cursor.inc"
     include "src/includes/api/vdu_buffer.inc"
     include "src/includes/api/vdu_bitmap.inc"
+    include "src/includes/api/vdu_plot.inc"
     include "src/includes/api/vdu_text.inc"
+    include "src/includes/api/vdu_color.inc"
     include "src/includes/api/sprite.inc"
     include "src/includes/api/vdu_sprite.inc"
     include "src/includes/api/macro_sprite.inc"
@@ -33,12 +35,18 @@
     include "src/includes/api/macro_bitmap.inc"
 
 ; Game includes
+    include "src/includes/game/globals.inc"
     include "src/includes/game/vdu_data.inc"
+    include "src/includes/game/vdu_splash_data.inc"
     include "src/includes/game/images_sprites.inc"
     include "src/includes/game/timer.inc"
     include "src/includes/game/maze/maze.inc"
     include "src/includes/game/maze/maze_wall_map.inc"
     include "src/includes/game/maze/maze_pellet_map.inc"
+    include "src/includes/game/splash.inc"
+    include "src/includes/game/credit.inc"
+    include "src/includes/game/player.inc"
+    include "src/includes/game/pause.inc"
 
 ; Character Sprites
     include "src/includes/game/sprites/pac_man/pac_man.inc"
@@ -85,6 +93,32 @@ start:
 
     call vdu_cursor_off
 
+    ld a, mos_getkbmap
+	rst.lil $08
+
+    ; Sending a VDU byte stream containing the logo
+    ld hl, vdu_logo_data
+    ld bc, vdu_logo_data_end - vdu_logo_data
+    rst.lil $18
+
+    call small_screen
+
+wait_loop:
+
+    MOSCALL $1E                         ; load IX with keymap address
+
+    ; If the space key is pressed
+    ld a, (ix + $0C)    
+    bit 2, a
+    jp nz, continue
+
+    jp wait_loop
+
+continue:
+
+    call vdu_screen_clear
+
+
     ld hl, vdu_data                      ; address of string to use
     ld bc, vdu_data_end - vdu_data         ; length of string
     rst.lil $18                         ; Call the MOS API to send data to VDP
@@ -105,6 +139,11 @@ start:
     rst.lil $18
 
     macro_text_set_color 11
+
+    ld de, 100
+    ld bc, 100
+    ld hl, ready_txt
+    call vdu_text_set_at
 
     ; Print the ready text
     ld hl, ready_txt
@@ -199,16 +238,40 @@ skip_animation:
     ld a, mos_getkbmap
 	rst.lil $08
 
+; Keypresses
+; C = Credit
+; 1 = Player 1 Start
+; 2 = Player 2 Start
+; A = Move Left
+; D = Move Right
+; W = Move Up
+; S = Move Down
+; P = Pause
+
     ; If the Escape key is pressed
     ld a, (ix + $0E)    
     bit 0, a
     jp nz, quit
 
-; If the A key is pressed
+    ; If the C key is pressed
+    ld a, (ix + $0A)
+    bit 2, a
+    call nz, credit_deposit
+
+    ; If the 1 key is pressed
+    ld a, (ix + $06)
+    bit 0, a
+    call nz, player_1_start
+
+    ; If the 2 key is pressed
+    ld a, (ix + $06)
+    bit 1, a
+    call nz, player_2_start
+
+    ; If the A key is pressed
     ld a, (ix + $08)    
     bit 1, a
     call nz, a_pressed
-
 
     ; If the D key is pressed
     ld a, (ix + $06)    
@@ -224,6 +287,11 @@ skip_animation:
     ld a, (ix + $0A)
     bit 1, a
     call nz, s_pressed
+
+    ; If the P key is pressed
+    ld a, (ix + $06)
+    bit 7, a
+    call nz, pause
 
     call vdu_vblank
 
