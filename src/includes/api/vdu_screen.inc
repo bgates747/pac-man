@@ -20,7 +20,7 @@ vdu_screen_set_mode:
 	ld (@arg),a        
 	ld hl,@cmd         
 	ld bc,@end-@cmd    
-	rst.lil VDU_OUTPUT_STREAM_TO_VDP       
+	rst.lil VDU_OUTPUT_TO_VDP       
 	ret
 @cmd: db 22
 @arg: db 0
@@ -37,7 +37,7 @@ vdu_screen_set_scaling:
 	ld (@arg),a        
 	ld hl,@cmd         
 	ld bc,@end-@cmd    
-	rst.lil VDU_OUTPUT_STREAM_TO_VDP
+	rst.lil VDU_OUTPUT_TO_VDP
 	ret
 @cmd: db 23,0,0xC0
 @arg: db 0

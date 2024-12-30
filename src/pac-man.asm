@@ -36,7 +36,7 @@
 
 ; Game includes
     include "src/includes/game/globals.inc"
-    include "src/includes/game/vdu_data.inc"
+    include "src/includes/game/vdu_game_data.inc"
     include "src/includes/game/vdu_splash_data.inc"
     include "src/includes/game/images_sprites.inc"
     include "src/includes/game/timer.inc"
@@ -77,6 +77,7 @@
 animation_counter:   db 10
 
 start:
+
     push af
     push bc
     push de
@@ -93,62 +94,130 @@ start:
 
     call vdu_cursor_off
 
-    ld a, mos_getkbmap
-	rst.lil $08
-
     ; Sending a VDU byte stream containing the logo
     ld hl, vdu_logo_data
     ld bc, vdu_logo_data_end - vdu_logo_data
-    rst.lil $18
+    rst.lil VDU_OUTPUT_TO_VDP
 
+    ; Display the splash screen
     call small_screen
 
-wait_loop:
+splash_loop:
 
-    MOSCALL $1E                         ; load IX with keymap address
+    ; Get a pointer to the keyboard map
+    ld a, mos_getkbmap
+	rst.lil $08
 
     ; If the space key is pressed
     ld a, (ix + $0C)    
     bit 2, a
-    jp nz, continue
+    jp nz, wait_on_credit
 
-    jp wait_loop
+    ; Otherwise wait on the splash screen to time out
+    jp splash_loop
 
-continue:
+wait_on_credit:
 
+    ; Clear the screen
     call vdu_screen_clear
 
+    ; Load the VDU data for the game sprites and tiles
+    ld hl, vdu_game_data
+    ld bc, vdu_game_data_end - vdu_game_data
+    rst.lil VDU_OUTPUT_TO_VDP
 
-    ld hl, vdu_data                      ; address of string to use
-    ld bc, vdu_data_end - vdu_data         ; length of string
-    rst.lil $18                         ; Call the MOS API to send data to VDP
+    ; Placeholders for the precredit menu
+    ld hl, precredit_placeholder_message
+    call vdu_text_print
+
+wait_on_credit_loop:
+
+    ld a, mos_getkbmap
+	rst.lil $08
+
+    ; If the Escape key is pressed
+    ld a, (ix + $0E)    
+    bit 0, a
+    jp nz, quit
+
+    ; If the C key is pressed
+    ld a, (ix + $0A)
+    bit 2, a
+    call nz, credit_deposit
+
+    ; If we've had a credit deposited, leave the menu
+    ld a, (credit)
+    or a
+    jp nz, player_select
+
+    jp wait_on_credit_loop
+
+player_select:
+
+    ; ***** UNCOMMENTING THIS call to vdu_screen_clear WILL CAUSE THE GAME NOT DISPLAY SPRITES *****
+
+    ; Clear the screen to get rid of the menu
+    ;call vdu_screen_clear
+
+    ; Placeholders for the precredit menu
+    ld hl, select_players_message
+    call vdu_text_print
+
+player_select_loop:
+    
+    ld a, mos_getkbmap
+	rst.lil $08
+
+    ; If the Escape key is pressed
+    ld a, (ix + $0E)    
+    bit 0, a
+    jp nz, quit
+
+    ; If the C key is pressed
+    ld a, (ix + $0A)
+    bit 2, a
+    call nz, credit_deposit
+
+    ; If the 1 key is pressed
+    ld a, (ix + $06)
+    bit 0, a
+    call nz, continue_after_player_select
+
+    ; If the 2 key is pressed
+    ld a, (ix + $06)
+    bit 1, a
+    call nz, continue_after_player_select
+
+    jp player_select_loop
+
+continue_after_player_select:
+
+    ; ***** UNCOMMENTING THIS call to vdu_screen_clear WILL CAUSE THE GAME NOT DISPLAY THE MAZE OR SPRITES *****
+
+    ;Clear the screen to get rid of the player select menu
+    ;call vdu_screen_clear
 
     ; Print the 1UP text
     ld hl, up1_txt
     ld bc, up1_txt_end - up1_txt
-    rst.lil $18
+    rst.lil VDU_OUTPUT_TO_VDP
 
     ; Print the high score
     ld hl, high_score_data
     ld bc, high_score_data_end - high_score_data
-    rst.lil $18
+    rst.lil VDU_OUTPUT_TO_VDP
 
     ; Print the 2UP text
     ld hl, up2_txt
     ld bc, up2_txt_end - up2_txt
-    rst.lil $18
+    rst.lil VDU_OUTPUT_TO_VDP
 
     macro_text_set_color 11
-
-    ld de, 100
-    ld bc, 100
-    ld hl, ready_txt
-    call vdu_text_set_at
 
     ; Print the ready text
     ld hl, ready_txt
     ld bc, ready_txt_end - ready_txt
-    rst.lil $18
+    rst.lil VDU_OUTPUT_TO_VDP
 
     ld bc,origin_left+8
     ld de,origin_top+8
@@ -165,38 +234,39 @@ continue:
     ld de,origin_top
     call vdu_set_gfx_origin
 
-    call vdu_vblank
-
-    call vdu_refresh
-
-    call game_timer_tick
-    
-    ld a, 6
+    ; Cherry
+    ld a, SPRITE_CHERRY_0_ID
     call vdu_sprite_select
     call vdu_sprite_show
 
-    ld a, 0
-    call vdu_sprite_select
-    ld a, 11
-    call vdu_sprite_select_frame
-    call vdu_sprite_show
-
-    ld a, 1
+    ; Pac-man
+    ld a, SPRITE_PAC_MAN_ID
     call vdu_sprite_select
     call vdu_sprite_show
 
-    ld a, 2
+    ; Increament each sprite frame by one for each
+    ; ghost so the animation is not in sync
+
+    ; Blinky
+    ld a, SPRITE_BLINKY_ID
     call vdu_sprite_select
+    call vdu_sprite_show
+
+    ; Pinky
+    ld a, SPRITE_PINKY_ID
+    call vdu_sprite_select
+    call vdu_sprite_next_frame
+    call vdu_sprite_show
+
+    ; Inky
+    ld a, SPRITE_INKY_ID
+    call vdu_sprite_select
+    call vdu_sprite_next_frame
     call vdu_sprite_next_frame
     call vdu_sprite_show
 
-    ld a, 3
-    call vdu_sprite_select
-    call vdu_sprite_next_frame
-    call vdu_sprite_next_frame
-    call vdu_sprite_show
-
-    ld a, 4
+    ; Clyde
+    ld a, SPRITE_CLYDE_ID
     call vdu_sprite_select
     call vdu_sprite_next_frame
     call vdu_sprite_next_frame
@@ -204,27 +274,26 @@ continue:
     call vdu_sprite_show
 
 game_loop:
-  
 
     call game_timer_tick
-    
+   
     ld hl, animation_counter
     dec (hl)
     jr nz, skip_animation 
 
-    ld a, 1
+    ld a, SPRITE_BLINKY_ID
     call vdu_sprite_select
     call vdu_sprite_next_frame
 
-    ld a, 2
+    ld a, SPRITE_PINKY_ID
     call vdu_sprite_select
     call vdu_sprite_next_frame
 
-    ld a, 3
+    ld a, SPRITE_INKY_ID
     call vdu_sprite_select
     call vdu_sprite_next_frame
 
-    ld a, 4
+    ld a, SPRITE_CLYDE_ID
     call vdu_sprite_select
     call vdu_sprite_next_frame
 
@@ -234,7 +303,6 @@ game_loop:
 
 skip_animation:
  
-
     ld a, mos_getkbmap
 	rst.lil $08
 
@@ -317,6 +385,12 @@ quit:
     ld hl,0
 
     ret
+
+precredit_placeholder_message:
+    .db "Precredit placeholder menu, insert credit with C",13,10,0
+
+select_players_message:
+    .db "Select number of players, 1 - 1 player 2 - 2 player",13,10,0
 
 quit_msg:
     .db "Thank you for playing Pac-Man!",13,10,0

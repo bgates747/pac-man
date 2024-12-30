@@ -56,7 +56,7 @@ VDU_MODE_512x384x16_DB:       equ 149
 VDU_MODE_512x384x4_DB:        equ 150
 VDU_MODE_512x384x2_DB:        equ 151
 
-VDU_OUTPUT_STREAM_TO_VDP:           equ $18
+VDU_OUTPUT_TO_VDP:           equ $18
 
 ; https://agonconsole8.github.io/agon-docs/vdp/System-Commands/#vdu-23-0-0a-n-set-cursor-start-line-and-appearance
 VDU_CURSOR_OFF:                     equ 0

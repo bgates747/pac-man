@@ -11,7 +11,7 @@ vdu_buffer_clear:
     ld (@bufferId+1),a
     ld hl,@cmd
     ld bc,@end-@cmd
-    rst.lil VDU_OUTPUT_STREAM_TO_VDP
+    rst.lil VDU_OUTPUT_TO_VDP
     ret
 @cmd:       db 23,0,0xA0
 @bufferId:	dw 0x0000
@@ -28,7 +28,7 @@ vdu_buffer_clear:
 vdu_buffer_clear_all:
     ld hl,@start
     ld bc,@end-@start
-    rst.lil VDU_OUTPUT_STREAM_TO_VDP
+    rst.lil VDU_OUTPUT_TO_VDP
     ret
 @start: db 23,0,$A0
       dw -1
@@ -50,7 +50,7 @@ vdu_buffer_consolidate:
     ld (@bufferId+1),a
     ld hl,@beg
     ld bc,@end-@beg
-    rst.lil VDU_OUTPUT_STREAM_TO_VDP
+    rst.lil VDU_OUTPUT_TO_VDP
     ret
 @beg: db 23,0,$A0
 @bufferId: dw 0x0000
@@ -69,7 +69,7 @@ vdu_buffer_select:
 	ld (@bufferId),hl
 	ld hl,@cmd
 	ld bc,@end-@cmd
-	rst.lil VDU_OUTPUT_STREAM_TO_VDP
+	rst.lil VDU_OUTPUT_TO_VDP
 	ret
 @cmd: db 23,27,0x20
 @bufferId: dw 0x0000

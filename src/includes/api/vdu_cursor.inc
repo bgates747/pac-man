@@ -8,7 +8,7 @@
 vdu_cursor_on:    
     ld hl,@cmd
     ld bc,@end-@cmd
-    rst.lil VDU_OUTPUT_STREAM_TO_VDP
+    rst.lil VDU_OUTPUT_TO_VDP
     ret
 @cmd:
     db 23,1,VDU_CURSOR_ON
@@ -24,7 +24,7 @@ vdu_cursor_on:
 vdu_cursor_off:	
 	ld hl,@cmd
 	ld bc,@end-@cmd
-	rst.lil VDU_OUTPUT_STREAM_TO_VDP
+	rst.lil VDU_OUTPUT_TO_VDP
 	ret
 @cmd:
 	db 23,1,VDU_CURSOR_OFF
@@ -40,7 +40,7 @@ vdu_cursor_off:
 vdu_cursor_steady:    
     ld hl,@cmd
     ld bc,@end-@cmd
-    rst.lil VDU_OUTPUT_STREAM_TO_VDP
+    rst.lil VDU_OUTPUT_TO_VDP
     ret
 @cmd:
     db 23,1,VDU_CURSOR_STEADY
@@ -56,7 +56,7 @@ vdu_cursor_steady:
 vdu_cursor_flash:    
     ld hl,@cmd
     ld bc,@end-@cmd
-    rst.lil VDU_OUTPUT_STREAM_TO_VDP
+    rst.lil VDU_OUTPUT_TO_VDP
     ret
 @cmd:
     db 23,1,VDU_CURSOR_FLASH

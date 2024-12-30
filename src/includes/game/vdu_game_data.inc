@@ -1,4 +1,4 @@
-vdu_data:
+vdu_game_data:
 
 ; Pac-Man
 
@@ -321,4 +321,4 @@ vdu_data:
     macro_bitmap_make_buffered SPRITE_PELLET_00, SPRITE_PELLET_TILE_WIDTH, SPRITE_PELLET_TILE_HEIGHT, "src/assets/pellet/pellet_00.rgba2"
     macro_bitmap_make_buffered SPRITE_POWER_PELLET_00, SPRITE_PELLET_TILE_WIDTH, SPRITE_PELLET_TILE_HEIGHT, "src/assets/pellet/power_pellet_00.rgba2"
 
-vdu_data_end:
+vdu_game_data_end:

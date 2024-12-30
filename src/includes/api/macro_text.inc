@@ -10,7 +10,7 @@
         ld hl,text
         ld bc,0
         ld a,0
-        rst.lil VDU_OUTPUT_STREAM_TO_VDP
+        rst.lil VDU_OUTPUT_TO_VDP
 	ENDMACRO
 
     ; Set the text color
